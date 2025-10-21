@@ -32,16 +32,25 @@ class SimpleCNN(nn.Module):
         return self.fc2(x)
 
 def load_rotdet(
-    repo_id: str = "fcrescio/rotdet",
-    filename: str = "model.safetensors",
+    repo_id: str | None = "fcrescio/rotdet",
+    filename: str | None = "model.safetensors",
     device: str | torch.device = "cpu",
 ) -> nn.Module:
     """
-    Load SimpleCNN with weights from the Hub.
+    Load SimpleCNN weights either from the Hub or from a local .safetensors path.
+    If `repo_id` is a local directory or a file path ending with .safetensors,
+    load it directly from disk.
     """
-    path = hf_hub_download(repo_id=repo_id, filename=filename)
     model = SimpleCNN()
-    state = load_file(path)
+    # direct local path
+    if repo_id and str(repo_id).endswith(".safetensors"):
+        path = repo_id
+    elif Path(str(filename)).exists():
+        path = filename
+    else:
+        # hub download
+        path = hf_hub_download(repo_id=repo_id, filename=filename)
+    state = load_file(str(path))
     model.load_state_dict(state)
     model.to(device)
     return model

@@ -55,6 +55,18 @@ def get_pages_from_example(
 
     return pages
 
+def meta_from_example(ex, row_idx=None, page_idx=None):
+    # Try common id/url/path fields if they exist
+    meta = {
+        "row_idx": row_idx,
+        "page_idx": page_idx,
+    }
+    # Common keys we might see on HF datasets
+    for k in ("id", "doc_id", "document_id", "file_name", "image_path", "url", "image_url", "pdf_url"):
+        if k in ex and ex[k] is not None:
+            meta[k] = ex[k]
+    return meta
+
 # ---------- dataset wrappers ----------
 
 class RotDetMap(Dataset):
@@ -109,10 +121,11 @@ class RotDetMap(Dataset):
         )
         pil = pages[page_idx]
         pil, label = maybe_rotate(pil, self.rotate_prob)
-        return prep_for_model(pil, self.out_size), label
+        meta = meta_from_example(ex, row_idx=row_idx, page_idx=page_idx)
+        return prep_for_model(pil, self.out_size), label, meta, pil
 
 class RotDetIterable(IterableDataset):
-    """Streaming/iterable dataset; flattens multi-page rows to per-page samples."""
+    """Streaming/iterable dataset; flattens multi-image rows to per-page samples."""
     def __init__(
         self,
         hf_stream: Iterable[dict],
@@ -123,6 +136,7 @@ class RotDetIterable(IterableDataset):
         multi_image_key: str = "images",
         pages_per_doc: Optional[int] = None,
         out_size: Tuple[int, int] = (128, 128),
+        skip_pages: int = 0,               # NEW: skip initial N page-samples
     ):
         self.ds = hf_stream
         self.rotate_prob = rotate_prob
@@ -131,11 +145,15 @@ class RotDetIterable(IterableDataset):
         self.multi_image_key = multi_image_key
         self.pages_per_doc = pages_per_doc
         self.out_size = out_size
+        self.skip_pages = skip_pages
         random.seed(seed)
 
     def __iter__(self):
         yielded = 0
+        skipped = 0
+        row_idx = -1
         for ex in self.ds:
+            row_idx += 1
             pages = get_pages_from_example(
                 ex,
                 single_image_key=self.single_image_key,
@@ -143,11 +161,17 @@ class RotDetIterable(IterableDataset):
                 allow_paths=True,
                 pages_per_doc=self.pages_per_doc,
             )
-            for pil in pages:
+            for page_idx, pil in enumerate(pages):
+                # Skip the first N page-samples across the stream
+                if skipped < self.skip_pages:
+                    skipped += 1
+                    continue
                 if self.limit is not None and yielded >= self.limit:
                     return
-                pil, label = maybe_rotate(pil, self.rotate_prob)
-                yield prep_for_model(pil, self.out_size), label
+                pil2, label = maybe_rotate(pil, self.rotate_prob)
+                meta = meta_from_example(ex, row_idx=row_idx, page_idx=page_idx)
+                # IMPORTANT: always yield 4-tuple (x, y, meta, pil) to match collate()
+                yield prep_for_model(pil2, self.out_size), label, meta, pil2
                 yielded += 1
 
 # ---------- public factory + dataloader ----------
@@ -197,15 +221,115 @@ def build_rotdet_loader(
     device: str = "cuda",
     streaming: bool = False,
 ):
+    def collate(batch):
+        xs   = torch.stack([b[0] for b in batch], dim=0)
+        ys   = torch.tensor([b[1] for b in batch], dtype=torch.long)
+        metas= [b[2] for b in batch]
+        pils = [b[3] for b in batch]  # PILs (already rotated) if you want to save
+        return xs, ys, metas, pils
     return DataLoader(
         dataset,
         batch_size=batch_size,
         shuffle=not streaming,
         num_workers=num_workers,
         pin_memory=(device == "cuda"),
-        collate_fn=lambda batch: (
-            torch.stack([b[0] for b in batch], dim=0),
-            torch.tensor([b[1] for b in batch], dtype=torch.long),
-        ),
+        collate_fn=collate,
     )
+
+
+# --- Splitting helpers (map + streaming) ---
+
+import itertools
+from typing import Tuple, Optional
+
+def build_rotdet_dataset_pair(
+    hf_obj,
+    hf_obj_train,
+    *,
+    streaming: bool,
+    rotate_prob: float = 0.5,
+    single_image_key: str = "image",
+    multi_image_key: str = "images",
+    pages_per_doc: Optional[int] = None,
+    out_size: Tuple[int, int] = (128, 128),
+    seed: int = 42,
+    # choose one of the following to size validation:
+    val_fraction: Optional[float] = None,  # e.g. 0.1
+    val_pages: Optional[int] = None,       # exact number of page-samples for val (streaming-friendly)
+    max_train_pages: Optional[int] = None, # optional cap on training pages
+) -> Tuple[Dataset | IterableDataset, Dataset | IterableDataset]:
+    """
+    Returns (train_set, val_set) with per-page samples.
+
+    Map-style:
+      - If val_fraction set -> split HF rows with train_test_split then wrap.
+      - If val_pages set    -> select first val_pages rows before flatten (quick approximation).
+    Streaming:
+      - Take first `val_pages` page-samples for val, then continue stream for train.
+      - If only val_fraction given -> raise (not supported without knowing length).
+    """
+
+    if not streaming:
+        ds = hf_obj
+        if val_fraction is not None:
+            # split at row level, then flatten pages in the wrappers
+            split = ds.train_test_split(test_size=val_fraction, seed=seed, shuffle=True)
+            train_rows, val_rows = split["train"], split["test"]
+        elif val_pages is not None:
+            # approximate: pick that many rows for val (before flatten)
+            n_val_rows = min(len(ds), val_pages)
+            val_rows = ds.select(range(n_val_rows))
+            train_rows = ds.select(range(n_val_rows, len(ds)))
+        else:
+            raise ValueError("Provide either val_fraction (map-style) or val_pages.")
+
+        train_set = RotDetMap(
+            train_rows, rotate_prob=rotate_prob, seed=seed,
+            single_image_key=single_image_key, multi_image_key=multi_image_key,
+            pages_per_doc=pages_per_doc, out_size=out_size
+        )
+        val_set = RotDetMap(
+            val_rows, rotate_prob=rotate_prob, seed=seed,
+            single_image_key=single_image_key, multi_image_key=multi_image_key,
+            pages_per_doc=pages_per_doc, out_size=out_size
+        )
+
+        # Optional: cap training pages after flattening
+        if max_train_pages is not None and hasattr(train_set, "_index") and len(train_set) > max_train_pages:
+            # Thin the flat index to first N
+            train_set._index = train_set._index[:max_train_pages]
+        return train_set, val_set
+
+    # --- streaming case ---
+    if val_pages is None and val_fraction is not None:
+        raise ValueError("For streaming datasets, specify val_pages (exact number).")
+
+    # validation stream (exact first val_pages)
+    val_set = RotDetIterable(
+        hf_obj,                              # <- this stream feeds validation
+        rotate_prob=rotate_prob,
+        limit=val_pages,
+        seed=seed,
+        single_image_key=single_image_key,
+        multi_image_key=multi_image_key,
+        pages_per_doc=pages_per_doc,
+        out_size=out_size,
+        skip_pages=0,                        # take from the start
+    )
+
+    # training needs a FRESH, independent stream:
+    # caller should pass another load_dataset(..., streaming=True) for train
+    train_set = RotDetIterable(
+        hf_obj_train,                        # <- pass a fresh stream here (see note below)
+        rotate_prob=rotate_prob,
+        limit=max_train_pages,
+        seed=seed,
+        single_image_key=single_image_key,
+        multi_image_key=multi_image_key,
+        pages_per_doc=pages_per_doc,
+        out_size=out_size,
+        skip_pages=(val_pages or 0), 
+    )
+
+    return train_set, val_set
 
