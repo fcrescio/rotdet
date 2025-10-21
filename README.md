@@ -1,8 +1,3 @@
-Of course 👍 — here’s a clean re-rendered version of the full **`README.md`** (no formatting breaks this time).
-You can copy it directly into a `README.md` file at the root of your repo.
-
----
-
 # 🌀 RotDet — Document Page Orientation Detection
 
 RotDet is a lightweight PyTorch training and evaluation framework for detecting page orientation (“rotated vs. normal”) in scanned documents.
