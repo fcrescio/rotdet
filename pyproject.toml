@@ -26,9 +26,10 @@ dependencies = [
 
 [project.scripts]
 rotdet-eval = "evaluate_rotdet:main"
+rotdet-train = "train_rotdet:main"
 
 [tool.setuptools]
-py-modules = ["evaluate_rotdet"]
+py-modules = ["rotdet_model", "rotdet_data", "rotdet_hf", "evaluate_rotdet", "train_rotdet"]
 
 [tool.black]
 line-length = 88
