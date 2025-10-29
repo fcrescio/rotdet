@@ -22,14 +22,16 @@ dependencies = [
     "tqdm>=4.65.0",
     "Pillow>=10.0.0",
     "numpy>=1.24",
+    "tqdm>=4.65.0,<5.0.0",
 ]
 
 [project.scripts]
 rotdet-eval = "evaluate_rotdet:main"
 rotdet-train = "train_rotdet:main"
+rotdet-snapshot = "scripts.snapshot_stream:main"
 
 [tool.setuptools]
-py-modules = ["rotdet_model", "rotdet_data", "rotdet_hf", "evaluate_rotdet", "train_rotdet"]
+py-modules = ["rotdet_model", "rotdet_data", "rotdet_hf", "evaluate_rotdet", "train_rotdet", "snapshot_stream"]
 
 [tool.black]
 line-length = 88

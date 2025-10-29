@@ -7,6 +7,7 @@ import numpy as np
 from PIL import Image
 import torch
 from torch.utils.data import Dataset, IterableDataset, DataLoader
+from tqdm.auto import tqdm
 
 # ---------- transforms / helpers ----------
 
@@ -17,8 +18,9 @@ def prep_for_model(pil_img: Image.Image, size: Tuple[int, int] = (128, 128)) -> 
 
 def maybe_rotate(pil: Image.Image, rotate_prob: float) -> Tuple[Image.Image, int]:
     if random.random() < rotate_prob:
-        pil = pil.rotate(random.choice([90, 270]), expand=True)
-        return pil, 1
+        rotation = random.choice([1,2,3])
+        pil = pil.rotate(90*rotation, expand=True)
+        return pil, rotation
     return pil, 0
 
 def get_pages_from_example(
@@ -89,6 +91,8 @@ class RotDetMap(Dataset):
         self.out_size = out_size
         random.seed(seed)
 
+        bar = tqdm(total=len(self.ds), desc="Building rotdet dataset")
+
         # Build flat index: (row_idx, page_idx)
         self._index: List[Tuple[int, int]] = []
         for row_idx in range(len(self.ds)):
@@ -102,6 +106,8 @@ class RotDetMap(Dataset):
             )
             for page_idx in range(len(pages)):
                 self._index.append((row_idx, page_idx))
+            bar.update(1)
+        bar.close()
 
         if not self._index:
             raise ValueError("No images found; check keys 'images', 'image', or 'image_path'.")

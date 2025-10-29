@@ -31,6 +31,49 @@ class SimpleCNN(nn.Module):
         x = F.relu(self.fc1(x))
         return self.fc2(x)
 
+class RotDetTiny(nn.Module):
+    # Input: (B, 1, 128, 128)  -> change to 64 if you like
+    def __init__(self, in_ch=1, num_classes=2):
+        super().__init__()
+        self.stem = nn.Sequential(
+            nn.Conv2d(in_ch, 16, 3, stride=2, padding=1), nn.ReLU(inplace=True),  # 64x64
+            nn.Conv2d(16, 32, 3, stride=2, padding=1),   nn.ReLU(inplace=True),  # 32x32
+            nn.Conv2d(32, 32, 3, stride=2, padding=1),   nn.ReLU(inplace=True),  # 16x16
+        )
+        self.head = nn.Sequential(
+            nn.AdaptiveAvgPool2d(1),  # -> (B, 32, 1, 1)
+            nn.Flatten(),
+            nn.Linear(32, num_classes),
+        )
+
+    def forward(self, x):
+        x = self.stem(x)
+        return self.head(x)
+
+class RotDetTinyBN(nn.Module):
+    def __init__(self, in_ch=1, num_classes=2, act=nn.ReLU(inplace=True)):
+        super().__init__()
+        def block(cin, cout):
+            return nn.Sequential(
+                nn.Conv2d(cin, cout, 3, stride=2, padding=1, bias=False),
+                nn.BatchNorm2d(cout),
+                act,
+            )
+        self.stem = nn.Sequential(
+            block(in_ch, 16),   # 64x64
+            block(16, 32),      # 32x32
+            block(32, 32),      # 16x16
+        )
+        # fully-conv classifier head
+        self.head = nn.Sequential(
+            nn.Conv2d(32, num_classes, 1, bias=True),
+            nn.AdaptiveAvgPool2d(1),
+            nn.Flatten()
+        )
+    def forward(self, x):
+        return self.head(self.stem(x))
+
+
 def load_rotdet(
     repo_id: str | None = "fcrescio/rotdet",
     filename: str | None = "model.safetensors",

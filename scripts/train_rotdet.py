@@ -6,12 +6,14 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-from datasets import load_dataset
+from datasets import load_dataset, load_from_disk
 from safetensors.torch import save_file, load_file
 
-from rotdet_model import SimpleCNN, load_rotdet
-from rotdet_data import build_rotdet_loader, build_rotdet_dataset_pair
+from rotdet_model import SimpleCNN, RotDetTiny, RotDetTinyBN, load_rotdet
+from rotdet_data import build_rotdet_loader, build_rotdet_dataset, build_rotdet_dataset_pair
 from rotdet_hf import load_hf_dataset  # transparent config picker
+
+from tqdm.auto import tqdm
 
 def evaluate(model, loader, device):
     model.eval()
@@ -77,6 +79,7 @@ def main():
                     help="Start from fcrescio/rotdet weights")
     ap.add_argument("--repo-id", default="fcrescio/rotdet")
     ap.add_argument("--filename", default="model.safetensors")
+    ap.add_argument("--snapshot_dir",type=str,default=None,help="If set, load a pre-built snapshot (DatasetDict with 'train' and 'validation') from disk.")
     args = ap.parse_args()
 
     torch.manual_seed(args.seed)
@@ -86,12 +89,36 @@ def main():
     if args.from_pretrained:
         model = load_rotdet(args.repo_id, args.filename, device)
     else:
-        model = SimpleCNN().to(device)
+        #model = SimpleCNN(num_classes=4).to(device)
+        model = RotDetTiny(num_classes=4).to(device)
+        #model = RotDetTinyBN(num_classes=4).to(device)
 
     maybe_resume(model, args.resume, device)
 
     # --- data (two streams for streaming train/val) ---
-    if args.streaming:
+    if args.snapshot_dir:
+        # Pre-split snapshot: no downloads, no internal splitting
+        dsd = load_from_disk(args.snapshot_dir)  # expects {'train', 'validation'}
+
+        # If your builder can take explicit splits, build each split independently.
+        # (Most repos expose a single-split builder under the hood; if yours doesn’t,
+        #  see the alt. block below.)
+        train_set = build_rotdet_dataset(
+        dsd["train"],
+        streaming=False,
+        rotate_prob=args.rotate_prob,
+        pages_per_doc=args.pages_per_doc,
+        seed=args.seed,
+        )
+        val_set = build_rotdet_dataset(
+        dsd["validation"],
+        streaming=False,
+        rotate_prob=args.rotate_prob,
+        pages_per_doc=args.pages_per_doc,
+        seed=args.seed,
+        )
+        shuffle_flag = True
+    elif args.streaming:
         # independent streams: one for val, one for train (skip val pages)
         val_stream = load_hf_dataset(args.dataset, split=args.split, config=args.config, streaming=True)
         train_stream = load_hf_dataset(args.dataset, split=args.split, config=args.config, streaming=True)
@@ -101,7 +128,7 @@ def main():
             train_stream,  # used for training (will be skipped inside)
             streaming=True,
             rotate_prob=args.rotate_prob,
-            pages_per_doc=args.pages-per-doc if hasattr(args, "pages-per-doc") else args.pages_per_doc,
+            pages_per_doc=args.pages_per_doc,
             val_fraction=None,
             val_pages=args.val_pages,
             max_train_pages=(args.max_train_pages or None),
@@ -143,6 +170,7 @@ def main():
         steps = 0
         t0 = time.time()
 
+        bar = tqdm(desc="Training")
         for x, y, metas, pils in train_loader:
             x, y = x.to(device), y.to(device)
             logits = model(x)
@@ -150,6 +178,8 @@ def main():
             opt.zero_grad(); loss.backward(); opt.step()
             running += loss.item()
             steps += 1
+            bar.update()
+        bar.close()
 
         train_loss = running / max(steps, 1)
         val_acc = evaluate(model, val_loader, device)
