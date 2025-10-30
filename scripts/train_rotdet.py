@@ -19,11 +19,19 @@ def evaluate(model, loader, device):
     model.eval()
     correct, total = 0, 0
     with torch.no_grad():
+        bar = tqdm(desc="Validating", total=len(loader))
         for x, y, metas, pils in loader:
             x, y = x.to(device), y.to(device)
+            x = x.float().div_(255)
+            for k in (1,2,3):
+                mask = (y == k)
+                if mask.any():
+                    x[mask] = torch.rot90(x[mask], k=k, dims=(2,3))
             pred = model(x).argmax(1)
             correct += (pred == y).sum().item()
             total += y.numel()
+            bar.update(1)
+        bar.close()
     return (correct / total) if total else 0.0
 
 def save_checkpoint(model, out_dir: Path, name: str):
@@ -170,15 +178,26 @@ def main():
         steps = 0
         t0 = time.time()
 
-        bar = tqdm(desc="Training")
+        bar = tqdm(desc="Training", total=len(train_loader))
+        scaler = torch.cuda.amp.GradScaler(enabled=(device == "cuda"))
+        torch.backends.cudnn.benchmark = True
         for x, y, metas, pils in train_loader:
-            x, y = x.to(device), y.to(device)
-            logits = model(x)
-            loss = loss_fn(logits, y)
-            opt.zero_grad(); loss.backward(); opt.step()
+            x, y = x.to(device, non_blocking=True), y.to(device, non_blocking=True)
+            x = x.float().div_(255)
+            for k in (1,2,3):
+                mask = (y == k)
+                if mask.any():
+                    x[mask] = torch.rot90(x[mask], k=k, dims=(2,3))
+            opt.zero_grad(set_to_none=True)
+            with torch.cuda.amp.autocast(enabled=(device == "cuda")):
+                logits = model(x)
+                loss = loss_fn(logits, y)
+            scaler.scale(loss).backward()  
+            scaler.step(opt)               
+            scaler.update()                
             running += loss.item()
             steps += 1
-            bar.update()
+            bar.update(1)
         bar.close()
 
         train_loss = running / max(steps, 1)

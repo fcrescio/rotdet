@@ -13,13 +13,13 @@ from tqdm.auto import tqdm
 
 def prep_for_model(pil_img: Image.Image, size: Tuple[int, int] = (128, 128)) -> torch.Tensor:
     img = pil_img.convert("L").resize(size)
-    arr = np.array(img, dtype=np.float32) / 255.0
+    arr = np.array(img, dtype=np.int8)
     return torch.from_numpy(arr).unsqueeze(0)  # 1xH*W
 
 def maybe_rotate(pil: Image.Image, rotate_prob: float) -> Tuple[Image.Image, int]:
     if random.random() < rotate_prob:
         rotation = random.choice([1,2,3])
-        pil = pil.rotate(90*rotation, expand=True)
+        #pil = pil.rotate(90*rotation, expand=True)
         return pil, rotation
     return pil, 0
 
@@ -82,6 +82,7 @@ class RotDetMap(Dataset):
         multi_image_key: str = "images",
         pages_per_doc: Optional[int] = None,
         out_size: Tuple[int, int] = (128, 128),
+        debug_pil: Optional[bool] = False,
     ):
         self.ds = hf_ds
         self.rotate_prob = rotate_prob
@@ -89,6 +90,7 @@ class RotDetMap(Dataset):
         self.multi_image_key = multi_image_key
         self.pages_per_doc = pages_per_doc
         self.out_size = out_size
+        self.debug_pil = debug_pil
         random.seed(seed)
 
         bar = tqdm(total=len(self.ds), desc="Building rotdet dataset")
@@ -128,7 +130,7 @@ class RotDetMap(Dataset):
         pil = pages[page_idx]
         pil, label = maybe_rotate(pil, self.rotate_prob)
         meta = meta_from_example(ex, row_idx=row_idx, page_idx=page_idx)
-        return prep_for_model(pil, self.out_size), label, meta, pil
+        return prep_for_model(pil, self.out_size), label, meta, (pil if self.debug_pil else None)
 
 class RotDetIterable(IterableDataset):
     """Streaming/iterable dataset; flattens multi-image rows to per-page samples."""
@@ -239,6 +241,8 @@ def build_rotdet_loader(
         shuffle=not streaming,
         num_workers=num_workers,
         pin_memory=(device == "cuda"),
+        persistent_workers=True,        
+        prefetch_factor=4,           
         collate_fn=collate,
     )
 
