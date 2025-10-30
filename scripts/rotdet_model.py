@@ -36,17 +36,26 @@ class RotDetTiny(nn.Module):
     def __init__(self, in_ch=1, num_classes=2):
         super().__init__()
         self.stem = nn.Sequential(
-            nn.Conv2d(in_ch, 16, 3, stride=1, padding=1), nn.ReLU(inplace=True),  # 64x64
+            nn.Conv2d(in_ch, 16, 3, stride=1, padding=1), nn.LeakyReLU(inplace=True),  # 64x64
+            nn.BatchNorm2d(16),
             nn.MaxPool2d(2,2),
-            nn.Conv2d(16, 32, 3, stride=1, padding=1),   nn.ReLU(inplace=True),  # 32x32
+            nn.Conv2d(16, 32, 3, stride=1, padding=1),   nn.LeakyReLU(inplace=True),  # 32x32
+            nn.BatchNorm2d(32),
             nn.MaxPool2d(2,2),
-            nn.Conv2d(32, 32, 3, stride=1, padding=1),   nn.ReLU(inplace=True),  # 16x16
+            nn.Conv2d(32, 32, 3, stride=1, padding=1),   nn.LeakyReLU(inplace=True),  # 16x16
+            nn.BatchNorm2d(32),
             nn.MaxPool2d(2,2),
         )
+        #self.head = nn.Sequential(
+        #    nn.AdaptiveAvgPool2d(1),  # -> (B, 32, 1, 1)
+        #    nn.Flatten(),
+        #    nn.Linear(32, num_classes),
+        #)
+        # fully-conv classifier head
         self.head = nn.Sequential(
-            nn.AdaptiveAvgPool2d(1),  # -> (B, 32, 1, 1)
-            nn.Flatten(),
-            nn.Linear(32, num_classes),
+            nn.Conv2d(32, num_classes, 1, bias=True),
+            nn.AdaptiveAvgPool2d(1),
+            nn.Flatten()
         )
 
     def forward(self, x):
@@ -87,7 +96,7 @@ def load_rotdet(
     If `repo_id` is a local directory or a file path ending with .safetensors,
     load it directly from disk.
     """
-    model = SimpleCNN()
+    model = RotDetTiny(num_classes=4)
     # direct local path
     if repo_id and str(repo_id).endswith(".safetensors"):
         path = repo_id

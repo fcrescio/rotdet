@@ -10,7 +10,7 @@ from datasets import load_dataset
 def evaluate(model, loader, device, fail_log=None, save_fail_images=None):
     model.eval()
     correct, total = 0, 0
-    cm = np.zeros((2, 2), dtype=int)
+    cm = np.zeros((4, 4), dtype=int)
 
     # Prepare logging
     fail_fp = None
@@ -24,6 +24,11 @@ def evaluate(model, loader, device, fail_log=None, save_fail_images=None):
     with torch.no_grad():
         for x, y, metas, pils in loader:
             x, y = x.to(device), y.to(device)
+            x = x.float().div_(255)
+            for k in (1,2,3):
+                mask = (y == k)
+                if mask.any():
+                    x[mask] = torch.rot90(x[mask], k=k, dims=(2,3))
             pred = model(x).argmax(1)
             correct += (pred == y).sum().item()
             total += y.numel()
