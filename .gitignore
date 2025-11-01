@@ -2,4 +2,6 @@
 *.pyc
 uv.lock
 checkpoints
-
+data/
+debug/
+failures.json

@@ -1,6 +1,7 @@
 # evaluate_rotdet.py
 import argparse, numpy as np, torch
 import json
+from pathlib import Path
 from torch.utils.data import DataLoader
 from rotdet_model import load_rotdet
 from rotdet_data import build_rotdet_dataset, build_rotdet_loader
@@ -51,7 +52,7 @@ def evaluate(model, loader, device, fail_log=None, save_fail_images=None):
                         # filename: idx-rowX-pageY_trueT_predP.jpg
                         ridx = metas[i].get("row_idx")
                         pidx = metas[i].get("page_idx")
-                        fname = f"row{ridx}_page{pidx}_true{record['true']}_pred{record['pred']}.jpg"
+                        fname = f"row{ridx}_page{pidx}_true{record['true']}_pred{record['pred']}.png"
                         path = img_dir / fname
                         # pils[i] is the exact PIL we evaluated (already rotated if label==1)
                         pils[i].save(path)

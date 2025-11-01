@@ -7,10 +7,10 @@ name = "rotdet-eval"
 version = "0.1.0"
 description = "Evaluation script for fcrescio/rotdet on Hugging Face document datasets."
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.12,<3.13"
 license = { text = "MIT" }
 authors = [
-    { name = "Your Name", email = "your.email@example.com" }
+    { name = "Francesco Crescioli", email = "francesco.crescioli@lpnhe.in2p3.fr" }
 ]
 
 dependencies = [
@@ -19,12 +19,13 @@ dependencies = [
     "datasets>=3.0.0",
     "huggingface_hub>=0.25.0",
     "safetensors>=0.4.3",
-    "tqdm>=4.65.0",
     "Pillow>=10.0.0",
     "numpy>=1.24",
     "tqdm>=4.65.0,<5.0.0",
-    "paddleocr>=3.0.0,<4.0.0",
-    "paddlepaddle>=3.0.0,<4.0.0",
+    "opencv-python-headless>=4.8,<5",
+    "paddlepaddle>=3.0.0",
+    "paddleocr>=3.2,<3.3",
+    "paddlex[ocr]>=3.2,<3.3"
 ]
 
 [project.scripts]
@@ -45,3 +46,22 @@ profile = "black"
 
 [tool.setuptools.packages.find]
 where = ["scripts"]
+
+[tool.uv.sources]
+paddlepaddle-gpu = { index = "paddle-cu129" } 
+paddlepaddle= { index = "paddle-cpu" } 
+
+[[tool.uv.index]]
+name = "paddle-cu129"
+url = "https://www.paddlepaddle.org.cn/packages/stable/cu129/"
+explicit = true
+
+[[tool.uv.index]]
+name = "paddle-cpu"
+url = "https://www.paddlepaddle.org.cn/packages/stable/cpu/"
+explicit = true
+
+[[tool.uv.index]]
+name = "pypi"
+url = "https://pypi.org/simple/"
+default = true

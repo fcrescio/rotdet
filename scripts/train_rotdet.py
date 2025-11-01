@@ -10,6 +10,7 @@ from datasets import load_dataset, load_from_disk
 from safetensors.torch import save_file, load_file
 
 from rotdet_model import SimpleCNN, RotDetTiny, RotDetTinyBN, load_rotdet
+from rotdet_c4net import C4Net
 from rotdet_data import build_rotdet_loader, build_rotdet_dataset, build_rotdet_dataset_pair
 from rotdet_hf import load_hf_dataset  # transparent config picker
 
@@ -27,7 +28,7 @@ def evaluate(model, loader, device):
                 mask = (y == k)
                 if mask.any():
                     x[mask] = torch.rot90(x[mask], k=k, dims=(2,3))
-            pred = model(x).argmax(1)
+            pred = model.compute_logits(model(x)).argmax(1)
             correct += (pred == y).sum().item()
             total += y.numel()
             bar.update(1)
@@ -98,8 +99,9 @@ def main():
         model = load_rotdet(args.repo_id, args.filename, device)
     else:
         #model = SimpleCNN(num_classes=4).to(device)
-        model = RotDetTiny(num_classes=4).to(device)
+        #model = RotDetTiny(num_classes=4).to(device)
         #model = RotDetTinyBN(num_classes=4).to(device)
+        model = C4Net(num_classes=4,in_ch=1,stem_ch=16, widths=(32, 64, 128),head_type="equivariant").to(device)
 
     maybe_resume(model, args.resume, device)
 
@@ -191,7 +193,8 @@ def main():
             opt.zero_grad(set_to_none=True)
             with torch.cuda.amp.autocast(enabled=(device == "cuda")):
                 logits = model(x)
-                loss = loss_fn(logits, y)
+                loss = model.compute_loss(logits, y)
+                #loss = loss_fn(logits, y)
             scaler.scale(loss).backward()  
             scaler.step(opt)               
             scaler.update()                
