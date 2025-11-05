@@ -2,6 +2,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from models.base import RotDetModel
+
 # =========================
 # Utility (C4 + quadrati)
 # =========================
@@ -143,7 +145,7 @@ class EquivariantHeadC4(nn.Module):
 # =======================================
 # 5) Modello: STEM + BACKBONE + HEAD
 # =======================================
-class C4Net(nn.Module):
+class C4Net(RotDetModel):
     """
     Assunzioni per semplicità/leggibilità:
       - input quadrati (H=W), idealmente multipli di 4
