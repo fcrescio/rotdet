@@ -25,13 +25,15 @@ dependencies = [
     "opencv-python-headless>=4.8,<5",
     "paddlepaddle>=3.0.0",
     "paddleocr>=3.2,<3.3",
-    "paddlex[ocr]>=3.2,<3.3"
+    "paddlex[ocr]>=3.2,<3.3",
+    "aim>=3.22.0,<4.0.0",
+    "matplotlib>=3.9.2,<4.0.0",
 ]
 
 [project.scripts]
 rotdet-eval = "evaluate_rotdet:main"
 rotdet-train = "train_rotdet:main"
-rotdet-snapshot = "scripts.snapshot_stream:main"
+rotdet-snapshot = "snapshot_stream:main"
 paddleocr-eval = "evaluate_paddleocr:main"
 
 [tool.setuptools]

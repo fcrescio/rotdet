@@ -2,6 +2,9 @@
 import argparse, os, json, time
 from pathlib import Path
 
+from datetime import datetime
+from typing import Dict
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -11,29 +14,45 @@ from safetensors.torch import save_file, load_file
 
 from rotdet_model import SimpleCNN, RotDetTiny, RotDetTinyBN, load_rotdet
 from rotdet_c4net import C4Net
-from rotdet_data import build_rotdet_loader, build_rotdet_dataset, build_rotdet_dataset_pair
+from rotdet_data import build_rotdet_loader, build_rotdet_dataset, build_rotdet_dataset_pair, rotate_on_device
 from rotdet_hf import load_hf_dataset  # transparent config picker
 
 from tqdm.auto import tqdm
 
-def evaluate(model, loader, device):
+import matplotlib.pyplot as plt
+import numpy as np
+
+def evaluate(model, loader, device) -> Dict:
     model.eval()
     correct, total = 0, 0
+    total_loss, n_batches = 0.0, 0
+    conf = torch.zeros(4, 4, dtype=torch.long)
     with torch.no_grad():
         bar = tqdm(desc="Validating", total=len(loader))
         for x, y, metas, pils in loader:
             x, y = x.to(device), y.to(device)
-            x = x.float().div_(255)
-            for k in (1,2,3):
-                mask = (y == k)
-                if mask.any():
-                    x[mask] = torch.rot90(x[mask], k=k, dims=(2,3))
-            pred = model.compute_logits(model(x)).argmax(1)
+            x = rotate_on_device(x, y)
+            logits_raw = model(x)
+            logits = model.compute_logits(logits_raw)
+            pred = logits.argmax(1)
+            loss = model.compute_loss(logits_raw, y) if hasattr(model, "compute_loss") \
+                   else torch.nn.functional.cross_entropy(logits, y)
+            total_loss += loss.item(); n_batches += 1
             correct += (pred == y).sum().item()
             total += y.numel()
+            for t, p in zip(y.view(-1), pred.view(-1)):
+                conf[t.long(), p.long()] += 1
             bar.update(1)
         bar.close()
-    return (correct / total) if total else 0.0
+    acc = (correct / total) if total else 0.0
+    val_loss = (total_loss / max(n_batches, 1))
+    acc_per_class = (conf.diag().float() / conf.sum(dim=1).clamp(min=1).float()).tolist()
+    return {
+        "val_acc": acc,
+        "val_loss": val_loss,
+        "confusion": conf.tolist(),
+        "acc_per_class": acc_per_class
+    }
 
 def save_checkpoint(model, out_dir: Path, name: str):
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -89,6 +108,15 @@ def main():
     ap.add_argument("--repo-id", default="fcrescio/rotdet")
     ap.add_argument("--filename", default="model.safetensors")
     ap.add_argument("--snapshot_dir",type=str,default=None,help="If set, load a pre-built snapshot (DatasetDict with 'train' and 'validation') from disk.")
+    # Aim (logging locale)
+    ap.add_argument("--aim", action="store_true", help="Abilita logging Aim (100% locale)")
+    ap.add_argument("--aim-repo", type=str, default="runs/aim",
+                    help="Cartella repository Aim locale (es. runs/aim)")
+    ap.add_argument("--experiment", type=str, default="RotDet-C4",
+                    help="Nome esperimento Aim")
+    ap.add_argument("--run-name", type=str, default=None,
+                    help="Nome run Aim (di default timestamp)")
+
     args = ap.parse_args()
 
     torch.manual_seed(args.seed)
@@ -104,6 +132,28 @@ def main():
         model = C4Net(num_classes=4,in_ch=1,stem_ch=16, widths=(32, 64, 128),head_type="equivariant").to(device)
 
     maybe_resume(model, args.resume, device)
+
+    # --- Aim setup (opzionale) ---
+    aim_run = None
+    if args.aim:
+        try:
+            from aim import Run, Image
+            aim_run = Run(repo=args.aim_repo, experiment=args.experiment)
+            aim_run.name = args.run_name or f"{args.experiment}-{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            # Logga iperparametri principali
+            aim_run["hparams"] = dict(
+                model=type(model).__name__,
+                epochs=args.epochs,
+                batch_size=args.batch_size,
+                lr=args.lr,
+                weight_decay=args.weight_decay,
+                rotate_prob=args.rotate_prob,
+                seed=args.seed,
+            )
+        except Exception as e:
+            print(f"[Aim] init fallita: {e}")
+            aim_run = None
+
 
     # --- data (two streams for streaming train/val) ---
     if args.snapshot_dir:
@@ -181,17 +231,13 @@ def main():
         t0 = time.time()
 
         bar = tqdm(desc="Training", total=len(train_loader))
-        scaler = torch.cuda.amp.GradScaler(enabled=(device == "cuda"))
+        scaler = torch.amp.GradScaler(enabled=(device == "cuda"))
         torch.backends.cudnn.benchmark = True
         for x, y, metas, pils in train_loader:
             x, y = x.to(device, non_blocking=True), y.to(device, non_blocking=True)
-            x = x.float().div_(255)
-            for k in (1,2,3):
-                mask = (y == k)
-                if mask.any():
-                    x[mask] = torch.rot90(x[mask], k=k, dims=(2,3))
+            x = rotate_on_device(x, y)
             opt.zero_grad(set_to_none=True)
-            with torch.cuda.amp.autocast(enabled=(device == "cuda")):
+            with torch.amp.autocast(device_type=device):
                 logits = model(x)
                 loss = model.compute_loss(logits, y)
                 #loss = loss_fn(logits, y)
@@ -204,10 +250,14 @@ def main():
         bar.close()
 
         train_loss = running / max(steps, 1)
-        val_acc = evaluate(model, val_loader, device)
+        eval_out = evaluate(model, val_loader, device)
         dt = time.time() - t0
 
-        print(f"epoch {epoch}/{args.epochs}  train_loss={train_loss:.4f}  val_acc={val_acc:.4f}  time={dt:.1f}s")
+        print(f"epoch {epoch}/{args.epochs}  "
+              f"train_loss={train_loss:.4f}  "
+              f"val_acc={eval_out['val_acc']:.4f}  "
+              f"val_loss={eval_out['val_loss']:.4f}  "
+              f"time={dt:.1f}s")
 
         # save last + optionally per-epoch
         last_path = save_checkpoint(model, out_dir, "last")
@@ -215,13 +265,61 @@ def main():
             save_checkpoint(model, out_dir, f"epoch{epoch:03d}")
 
         # track best
-        if val_acc > best_acc:
-            best_acc = val_acc
+        if eval_out['val_acc'] > best_acc:
+            best_acc = eval_out['val_acc']
             best_path = save_checkpoint(model, out_dir, "best")
 
-        history["epochs"].append({
-            "epoch": epoch, "train_loss": train_loss, "val_acc": val_acc, "time_s": dt
-        })
+        row = {
+            "epoch": epoch,
+            "train_loss": train_loss,
+            "val_acc": eval_out["val_acc"],
+            "val_loss": eval_out["val_loss"],
+            "time_s": dt,
+        }
+        history["epochs"].append(row)
+        # --- Aim logging per epoca ---
+        if aim_run is not None:
+            # scalari principali
+            aim_run.track(train_loss,            name="loss", step=epoch, context={"subset": "train"})
+            aim_run.track(eval_out["val_loss"],  name="loss", step=epoch, context={"subset": "val"})
+            aim_run.track(eval_out["val_acc"],   name="acc",  step=epoch, context={"subset": "val"})
+
+            # learning-rate corrente (se AdamW/SGD standard)
+            try:
+                aim_run.track(opt.param_groups[0]["lr"], name="lr", step=epoch)
+            except Exception:
+                pass
+
+            # confusion matrix come figura matplotlib
+            try:
+                cm = np.array(eval_out["confusion"], dtype=np.int64)
+                fig = plt.figure()
+                plt.imshow(cm, interpolation="nearest")
+                plt.title(f"Confusion epoch {epoch}")
+                plt.xticks(range(cm.shape[0]), [0, 90, 180, 270])
+                plt.yticks(range(cm.shape[0]), [0, 90, 180, 270])
+                for i in range(cm.shape[0]):
+                    for j in range(cm.shape[1]):
+                        plt.text(j, i, str(cm[i, j]), ha="center", va="center")
+                plt.tight_layout()
+                aim_run.track(Image(fig), name="confusion", step=epoch)
+                plt.close(fig)
+            except Exception as e:
+                print(f"[Aim] confusion plot fallito: {e}")
+
+            # accuratezza per classe
+            for i, v in enumerate(eval_out["acc_per_class"]):
+                aim_run.track(float(v), name="acc_per_class", step=epoch, context={"cls": str(i)})
+
+            # checkpoint come artefatti (last sempre, best solo quando aggiornato)
+            #try:
+            #    from aim import File
+            #    aim_run.track(File(str(last_path)), name="checkpoint", step=epoch, context={"kind": "last"})
+            #    if best_acc == eval_out["val_acc"]:
+            #        aim_run.track(File(str(best_path)), name="checkpoint", step=epoch, context={"kind": "best"})
+            #except Exception as e:
+            #    print(f"[Aim] checkpoint artifact fallito: {e}")
+
 
     # save training summary
     history["best"] = {"val_acc": best_acc}
@@ -229,4 +327,7 @@ def main():
     print(f"\nSaved: last -> {last_path}")
     if best_acc >= 0:
         print(f"Saved: best -> {best_path} (val_acc={best_acc:.4f})")
+
+    if aim_run is not None:
+        aim_run.close()
 

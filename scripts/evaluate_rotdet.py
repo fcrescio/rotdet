@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 from torch.utils.data import DataLoader
 from rotdet_model import load_rotdet
-from rotdet_data import build_rotdet_dataset, build_rotdet_loader
+from rotdet_data import build_rotdet_dataset, build_rotdet_loader, rotate_on_device
 from rotdet_hf import load_hf_dataset
 from datasets import load_dataset
 
@@ -25,12 +25,9 @@ def evaluate(model, loader, device, fail_log=None, save_fail_images=None):
     with torch.no_grad():
         for x, y, metas, pils in loader:
             x, y = x.to(device), y.to(device)
-            x = x.float().div_(255)
-            for k in (1,2,3):
-                mask = (y == k)
-                if mask.any():
-                    x[mask] = torch.rot90(x[mask], k=k, dims=(2,3))
-            pred = model(x).argmax(1)
+            x = rotate_on_device(x, y)
+            #pred = model(x).argmax(1)
+            pred = model.compute_logits(model(x)).argmax(1)
             correct += (pred == y).sum().item()
             total += y.numel()
             for t, p in zip(y.tolist(), pred.tolist()):

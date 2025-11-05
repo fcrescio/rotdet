@@ -16,6 +16,14 @@ def prep_for_model(pil_img: Image.Image, size: Tuple[int, int] = (128, 128)) -> 
     arr = np.array(img, dtype=np.int8)
     return torch.from_numpy(arr).unsqueeze(0)  # 1xH*W
 
+def rotate_on_device(x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
+    x = x.float().div_(255)
+    for k in (1,2,3):
+        mask = (y == k)
+        if mask.any():
+            x[mask] = torch.rot90(x[mask], k=k, dims=(2,3))
+    return x
+
 def maybe_rotate(pil: Image.Image, rotate_prob: float) -> Tuple[Image.Image, int]:
     if random.random() < rotate_prob:
         rotation = random.choice([1,2,3])

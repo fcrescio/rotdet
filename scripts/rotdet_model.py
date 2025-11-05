@@ -5,6 +5,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from huggingface_hub import hf_hub_download
 from safetensors.torch import load_file
+from rotdet_c4net import C4Net
 
 __all__ = ["SimpleCNN", "load_rotdet"]
 
@@ -96,7 +97,8 @@ def load_rotdet(
     If `repo_id` is a local directory or a file path ending with .safetensors,
     load it directly from disk.
     """
-    model = RotDetTiny(num_classes=4)
+    #model = RotDetTiny(num_classes=4)
+    model = C4Net(num_classes=4,in_ch=1,stem_ch=16, widths=(32, 64, 128),head_type="equivariant")
     # direct local path
     if repo_id and str(repo_id).endswith(".safetensors"):
         path = repo_id
