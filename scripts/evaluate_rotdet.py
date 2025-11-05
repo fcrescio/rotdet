@@ -3,6 +3,7 @@ import argparse, numpy as np, torch
 import json
 from pathlib import Path
 from torch.utils.data import DataLoader
+from models import available_model_names
 from rotdet_model import load_rotdet
 from rotdet_data import build_rotdet_dataset, build_rotdet_loader, rotate_on_device
 from rotdet_hf import load_hf_dataset
@@ -78,10 +79,39 @@ def main():
     ap.add_argument("--rotate_prob", type=float, default=0.5)
     ap.add_argument("--fail_log", default=None, help="Path to write JSONL with failed samples.")
     ap.add_argument("--save_fail_images", default=None, help="Directory to save failed page images.")
+
+    model_choices = available_model_names()
+    ap.add_argument(
+        "--model",
+        choices=model_choices,
+        default="c4net",
+        help=f"Model architecture for checkpoint loading. Choices: {', '.join(model_choices)}",
+    )
+    ap.add_argument(
+        "--model-kwargs",
+        default=None,
+        help="Optional JSON string with keyword arguments to override model defaults.",
+    )
     args = ap.parse_args()
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    model = load_rotdet(args.repo_id, args.filename, device)
+    model_kwargs = None
+    if args.model_kwargs:
+        try:
+            parsed = json.loads(args.model_kwargs)
+        except json.JSONDecodeError as exc:
+            raise SystemExit(f"Invalid JSON for --model-kwargs: {exc}") from exc
+        if not isinstance(parsed, dict):
+            raise SystemExit("--model-kwargs must decode to a JSON object")
+        model_kwargs = parsed
+
+    model = load_rotdet(
+        args.repo_id,
+        args.filename,
+        device,
+        model=args.model,
+        model_kwargs=model_kwargs,
+    )
 
     hf_obj = load_hf_dataset(
         args.dataset,

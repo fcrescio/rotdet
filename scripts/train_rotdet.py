@@ -12,8 +12,8 @@ import torch.optim as optim
 from datasets import load_dataset, load_from_disk
 from safetensors.torch import save_file, load_file
 
-from rotdet_model import SimpleCNN, RotDetTiny, RotDetTinyBN, load_rotdet
-from rotdet_c4net import C4Net
+from models import available_model_names, create_model
+from rotdet_model import load_rotdet
 from rotdet_data import build_rotdet_loader, build_rotdet_dataset, build_rotdet_dataset_pair, rotate_on_device
 from rotdet_hf import load_hf_dataset  # transparent config picker
 
@@ -117,19 +117,46 @@ def main():
     ap.add_argument("--run-name", type=str, default=None,
                     help="Nome run Aim (di default timestamp)")
 
+    model_choices = available_model_names()
+    ap.add_argument(
+        "--model",
+        choices=model_choices,
+        default="c4net",
+        help=f"Model architecture to use. Choices: {', '.join(model_choices)}",
+    )
+    ap.add_argument(
+        "--model-kwargs",
+        default=None,
+        help="Optional JSON string with keyword arguments to override model defaults.",
+    )
+
     args = ap.parse_args()
+
+    model_overrides: Dict | None = None
+    if args.model_kwargs:
+        try:
+            parsed = json.loads(args.model_kwargs)
+        except json.JSONDecodeError as exc:
+            raise SystemExit(f"Invalid JSON for --model-kwargs: {exc}") from exc
+        if not isinstance(parsed, dict):
+            raise SystemExit("--model-kwargs must decode to a JSON object")
+        model_overrides = parsed
 
     torch.manual_seed(args.seed)
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     # --- model ---
     if args.from_pretrained:
-        model = load_rotdet(args.repo_id, args.filename, device)
+        model = load_rotdet(
+            args.repo_id,
+            args.filename,
+            device,
+            model=args.model,
+            model_kwargs=model_overrides,
+        )
     else:
-        #model = SimpleCNN(num_classes=4).to(device)
-        #model = RotDetTiny(num_classes=4).to(device)
-        #model = RotDetTinyBN(num_classes=4).to(device)
-        model = C4Net(num_classes=4,in_ch=1,stem_ch=16, widths=(32, 64, 128),head_type="equivariant").to(device)
+        overrides = model_overrides or {}
+        model = create_model(args.model, **overrides).to(device)
 
     maybe_resume(model, args.resume, device)
 
@@ -142,7 +169,7 @@ def main():
             aim_run.name = args.run_name or f"{args.experiment}-{datetime.now().strftime('%Y%m%d_%H%M%S')}"
             # Logga iperparametri principali
             aim_run["hparams"] = dict(
-                model=type(model).__name__,
+                model=args.model,
                 epochs=args.epochs,
                 batch_size=args.batch_size,
                 lr=args.lr,

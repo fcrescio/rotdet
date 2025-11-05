@@ -8,30 +8,45 @@ import torch.nn as nn
 from huggingface_hub import hf_hub_download
 from safetensors.torch import load_file
 
-from models import SimpleCNN, RotDetTiny, RotDetTinyBN
-from rotdet_c4net import C4Net
+from typing import Any, Dict
 
-__all__ = ["SimpleCNN", "RotDetTiny", "RotDetTinyBN", "load_rotdet"]
+from models import (
+    C4Net,
+    SimpleCNN,
+    RotDetTiny,
+    RotDetTinyBN,
+    available_model_names,
+    create_model,
+    default_model_kwargs,
+)
+
+__all__ = [
+    "SimpleCNN",
+    "RotDetTiny",
+    "RotDetTinyBN",
+    "C4Net",
+    "available_model_names",
+    "create_model",
+    "default_model_kwargs",
+    "load_rotdet",
+]
 
 
 def load_rotdet(
     repo_id: str | None = "fcrescio/rotdet",
     filename: str | None = "model.safetensors",
     device: str | torch.device = "cpu",
+    *,
+    model: str = "c4net",
+    model_kwargs: Dict[str, Any] | None = None,
 ) -> nn.Module:
     """
     Load rotation detector weights either from the Hub or from a local .safetensors path.
     If `repo_id` is a local directory or a file path ending with .safetensors,
     load it directly from disk.
     """
-    #model = RotDetTiny(num_classes=4)
-    model = C4Net(
-        num_classes=4,
-        in_ch=1,
-        stem_ch=16,
-        widths=(32, 64, 128),
-        head_type="equivariant",
-    )
+    overrides = model_kwargs or {}
+    model_obj = create_model(model, **overrides)
     # direct local path
     if repo_id and str(repo_id).endswith(".safetensors"):
         path = repo_id
@@ -41,7 +56,7 @@ def load_rotdet(
         # hub download
         path = hf_hub_download(repo_id=repo_id, filename=filename)
     state = load_file(str(path))
-    model.load_state_dict(state)
-    model.to(device)
-    return model
+    model_obj.load_state_dict(state)
+    model_obj.to(device)
+    return model_obj
 
