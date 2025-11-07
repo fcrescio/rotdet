@@ -185,39 +185,44 @@ class C4Net(RotDetModel):
             raise ValueError("head_type must be 'invariant' or 'equivariant'")
         self.head_type = head_type
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:  # type: ignore[override]
+    def forward_features(self, x: torch.Tensor) -> torch.Tensor:
+        """Return backbone features before the classification head."""
+
         b, c, h, w = x.shape
         if h != w:
             raise ValueError(f"Expected square input, got {h}x{w}.")
         x = self.stem(x)
-        x = self.backbone(x)
-        return self.head(x)
+        return self.backbone(x)
 
-    def compute_loss(self, y_pred: torch.Tensor, labels: torch.Tensor) -> torch.Tensor:
-        if self.head_type == "invariant":
-            return F.cross_entropy(y_pred, labels)
-
+    def _equivariant_logits(self, y_pred: torch.Tensor) -> torch.Tensor:
         if y_pred.dim() != 4:
             raise ValueError("Equivariant head expects 4D predictions.")
         b, c4, h, w = y_pred.shape
         if c4 % 4 != 0:
             raise ValueError(f"Channel dimension {c4} is not divisible by 4.")
         c = c4 // 4
-
-        if c == 1:
-            logits = F.adaptive_avg_pool2d(y_pred, 1).reshape(b, 4)
-            return F.cross_entropy(logits, labels)
-
         y = y_pred.view(b, c, 4, h, w).mean(dim=2)
-        logits = F.adaptive_avg_pool2d(y, 1).reshape(b, c)
-        return F.cross_entropy(logits, labels)
+        return F.adaptive_avg_pool2d(y, 1).reshape(b, c)
 
-    def compute_logits(self, y_pred: torch.Tensor) -> torch.Tensor:
-        b, c4, h, w = y_pred.shape
-        c = c4 // 4
-        y = y_pred.view(b, c, 4, h, w).mean(dim=2)
-        logits = F.adaptive_avg_pool2d(y, 1).reshape(b, c)
-        return logits
+    def forward(self, x: torch.Tensor) -> torch.Tensor:  # type: ignore[override]
+        features = self.forward_features(x)
+        head_out = self.head(features)
+        if self.head_type == "equivariant":
+            return self._equivariant_logits(head_out)
+        return head_out
+
+    def forward_equivariant_map(self, x: torch.Tensor) -> torch.Tensor:
+        """Return the raw equivariant head output (before pooling to logits).
+
+        This is useful for analysis or visualization when ``head_type`` is
+        ``"equivariant"``. The training pipeline should continue to rely on
+        :meth:`forward`, which already returns pooled logits.
+        """
+
+        if self.head_type != "equivariant":
+            raise RuntimeError("forward_equivariant_map is only available for the equivariant head.")
+        features = self.forward_features(x)
+        return self.head(features)
 
 
 __all__ = [

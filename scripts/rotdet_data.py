@@ -17,17 +17,42 @@ def prep_for_model(pil_img: Image.Image, size: Tuple[int, int] = (128, 128)) -> 
     return torch.from_numpy(arr).unsqueeze(0)  # 1xH*W
 
 def rotate_on_device(x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
+    """Normalize ``x`` and apply the rotation described by ``y`` on-device.
+
+    Args:
+        x: Tensor of shape ``(B, C, H, W)`` whose values are in ``[0, 255]`` or
+            ``[0, 1]``.
+        y: Tensor of shape ``(B,)`` with rotation indices in ``{0, 1, 2, 3}``.
+            For sample ``i`` the rotation is ``y[i] * 90`` degrees counter-clockwise.
+
+    Returns:
+        A tensor with values in ``[0, 1]`` where each sample has been rotated
+        exactly once according to ``y``.
+    """
+
     x = x.float().div_(255)
-    for k in (1,2,3):
-        mask = (y == k)
+    for k in (1, 2, 3):
+        mask = y == k
         if mask.any():
-            x[mask] = torch.rot90(x[mask], k=k, dims=(2,3))
+            x[mask] = torch.rot90(x[mask], k=k, dims=(2, 3))
     return x
 
-def maybe_rotate(pil: Image.Image, rotate_prob: float) -> Tuple[Image.Image, int]:
+
+def sample_rotation_label(pil: Image.Image, rotate_prob: float) -> Tuple[Image.Image, int]:
+    """Sample a rotation label for ``pil`` without mutating the pixels.
+
+    Args:
+        pil: The original PIL image.
+        rotate_prob: Probability of assigning a non-zero rotation.
+
+    Returns:
+        A tuple ``(pil, label)`` where ``label`` is 0 when no rotation should be
+        applied later, otherwise one of ``{1, 2, 3}`` indicating how many 90°
+        counter-clockwise rotations ``rotate_on_device`` will apply.
+    """
+
     if random.random() < rotate_prob:
-        rotation = random.choice([1,2,3])
-        #pil = pil.rotate(90*rotation, expand=True)
+        rotation = random.choice([1, 2, 3])
         return pil, rotation
     return pil, 0
 
@@ -80,7 +105,7 @@ def meta_from_example(ex, row_idx=None, page_idx=None):
 # ---------- dataset wrappers ----------
 
 class RotDetMap(Dataset):
-    """Indexable dataset; flattens multi-page rows into per-page samples."""
+    """Indexable dataset that assigns rotation labels without mutating pixels."""
     def __init__(
         self,
         hf_ds,
@@ -136,12 +161,12 @@ class RotDetMap(Dataset):
             pages_per_doc=self.pages_per_doc,
         )
         pil = pages[page_idx]
-        pil, label = maybe_rotate(pil, self.rotate_prob)
+        pil, label = sample_rotation_label(pil, self.rotate_prob)
         meta = meta_from_example(ex, row_idx=row_idx, page_idx=page_idx)
         return prep_for_model(pil, self.out_size), label, meta, (pil if self.debug_pil else None)
 
 class RotDetIterable(IterableDataset):
-    """Streaming/iterable dataset; flattens multi-image rows to per-page samples."""
+    """Streaming dataset that yields unrotated pages with sampled labels."""
     def __init__(
         self,
         hf_stream: Iterable[dict],
@@ -184,10 +209,10 @@ class RotDetIterable(IterableDataset):
                     continue
                 if self.limit is not None and yielded >= self.limit:
                     return
-                pil2, label = maybe_rotate(pil, self.rotate_prob)
+                pil_labeled, label = sample_rotation_label(pil, self.rotate_prob)
                 meta = meta_from_example(ex, row_idx=row_idx, page_idx=page_idx)
                 # IMPORTANT: always yield 4-tuple (x, y, meta, pil) to match collate()
-                yield prep_for_model(pil2, self.out_size), label, meta, pil2
+                yield prep_for_model(pil_labeled, self.out_size), label, meta, pil_labeled
                 yielded += 1
 
 # ---------- public factory + dataloader ----------
@@ -241,7 +266,7 @@ def build_rotdet_loader(
         xs   = torch.stack([b[0] for b in batch], dim=0)
         ys   = torch.tensor([b[1] for b in batch], dtype=torch.long)
         metas= [b[2] for b in batch]
-        pils = [b[3] for b in batch]  # PILs (already rotated) if you want to save
+        pils = [b[3] for b in batch]  # Original PIL references for debugging/saving
         return xs, ys, metas, pils
     return DataLoader(
         dataset,
