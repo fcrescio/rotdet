@@ -8,7 +8,7 @@ import torch
 
 from models import available_model_names
 from rotdet_model import load_rotdet
-from rotdet_data import build_rotdet_dataset, build_rotdet_loader, rotate_on_device
+from rotdet_data import build_rotdet_dataset, build_rotdet_loader
 from rotdet_hf import load_hf_dataset
 
 def evaluate(model, loader, device, fail_log=None, save_fail_images=None):
@@ -27,8 +27,8 @@ def evaluate(model, loader, device, fail_log=None, save_fail_images=None):
 
     with torch.no_grad():
         for x, y, metas, pils in loader:
-            x, y = x.to(device), y.to(device)
-            x = rotate_on_device(x, y)
+            x = x.to(device)
+            y = y.to(device)
             logits = model(x)
             pred = logits.argmax(1)
             correct += (pred == y).sum().item()
@@ -54,7 +54,7 @@ def evaluate(model, loader, device, fail_log=None, save_fail_images=None):
                         pidx = metas[i].get("page_idx")
                         fname = f"row{ridx}_page{pidx}_true{record['true']}_pred{record['pred']}.png"
                         path = img_dir / fname
-                        # pils[i] references the original page prior to on-device rotation
+                        # pils[i] is already rotated to match the label emitted by the dataset
                         pils[i].save(path)
                         saved_path = str(path)
                         record["saved_image"] = saved_path

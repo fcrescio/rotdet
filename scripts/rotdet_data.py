@@ -12,48 +12,28 @@ from tqdm.auto import tqdm
 # ---------- transforms / helpers ----------
 
 def prep_for_model(pil_img: Image.Image, size: Tuple[int, int] = (128, 128)) -> torch.Tensor:
+    """Convert a PIL page into a normalized tensor ready for the model."""
+
     img = pil_img.convert("L").resize(size)
-    arr = np.array(img, dtype=np.int8)
-    return torch.from_numpy(arr).unsqueeze(0)  # 1xH*W
-
-def rotate_on_device(x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
-    """Normalize ``x`` and apply the rotation described by ``y`` on-device.
-
-    Args:
-        x: Tensor of shape ``(B, C, H, W)`` whose values are in ``[0, 255]`` or
-            ``[0, 1]``.
-        y: Tensor of shape ``(B,)`` with rotation indices in ``{0, 1, 2, 3}``.
-            For sample ``i`` the rotation is ``y[i] * 90`` degrees counter-clockwise.
-
-    Returns:
-        A tensor with values in ``[0, 1]`` where each sample has been rotated
-        exactly once according to ``y``.
-    """
-
-    x = x.float().div_(255)
-    for k in (1, 2, 3):
-        mask = y == k
-        if mask.any():
-            x[mask] = torch.rot90(x[mask], k=k, dims=(2, 3))
-    return x
+    arr = np.array(img, dtype=np.float32) / 255.0
+    return torch.from_numpy(arr).unsqueeze(0)  # (1, H, W)
 
 
-def sample_rotation_label(pil: Image.Image, rotate_prob: float) -> Tuple[Image.Image, int]:
-    """Sample a rotation label for ``pil`` without mutating the pixels.
+def apply_random_rotation(pil: Image.Image, rotate_prob: float) -> Tuple[Image.Image, int]:
+    """Rotate ``pil`` on CPU and return the transformed image with its label.
 
-    Args:
-        pil: The original PIL image.
-        rotate_prob: Probability of assigning a non-zero rotation.
-
-    Returns:
-        A tuple ``(pil, label)`` where ``label`` is 0 when no rotation should be
-        applied later, otherwise one of ``{1, 2, 3}`` indicating how many 90°
-        counter-clockwise rotations ``rotate_on_device`` will apply.
+    With probability ``rotate_prob`` the page is rotated counter-clockwise by a
+    random number of quarter turns. The returned label ``k`` is in ``{0, 1, 2, 3}``
+    (0=no rotation, 1=90°, 2=180°, 3=270°) and always matches the applied
+    transform so downstream code can treat the task as standard classification
+    over ``{0, 1, 2, 3}`` without further rotation logic.
     """
 
     if random.random() < rotate_prob:
-        rotation = random.choice([1, 2, 3])
-        return pil, rotation
+        k = random.choice([1, 2, 3])
+        # PIL rotates counter-clockwise for positive angles, matching torch.rot90.
+        rotated = pil.rotate(90 * k, expand=False)
+        return rotated, k
     return pil, 0
 
 def get_pages_from_example(
@@ -105,7 +85,7 @@ def meta_from_example(ex, row_idx=None, page_idx=None):
 # ---------- dataset wrappers ----------
 
 class RotDetMap(Dataset):
-    """Indexable dataset that assigns rotation labels without mutating pixels."""
+    """Indexable dataset that emits already-rotated pages with matching labels."""
     def __init__(
         self,
         hf_ds,
@@ -161,12 +141,17 @@ class RotDetMap(Dataset):
             pages_per_doc=self.pages_per_doc,
         )
         pil = pages[page_idx]
-        pil, label = sample_rotation_label(pil, self.rotate_prob)
+        pil, label = apply_random_rotation(pil, self.rotate_prob)
         meta = meta_from_example(ex, row_idx=row_idx, page_idx=page_idx)
-        return prep_for_model(pil, self.out_size), label, meta, (pil if self.debug_pil else None)
+        return (
+            prep_for_model(pil, self.out_size),
+            label,
+            meta,
+            pil.copy() if self.debug_pil else None,
+        )
 
 class RotDetIterable(IterableDataset):
-    """Streaming dataset that yields unrotated pages with sampled labels."""
+    """Streaming dataset that rotates each yielded page according to its label."""
     def __init__(
         self,
         hf_stream: Iterable[dict],
@@ -209,10 +194,15 @@ class RotDetIterable(IterableDataset):
                     continue
                 if self.limit is not None and yielded >= self.limit:
                     return
-                pil_labeled, label = sample_rotation_label(pil, self.rotate_prob)
+                pil_labeled, label = apply_random_rotation(pil, self.rotate_prob)
                 meta = meta_from_example(ex, row_idx=row_idx, page_idx=page_idx)
                 # IMPORTANT: always yield 4-tuple (x, y, meta, pil) to match collate()
-                yield prep_for_model(pil_labeled, self.out_size), label, meta, pil_labeled
+                yield (
+                    prep_for_model(pil_labeled, self.out_size),
+                    label,
+                    meta,
+                    pil_labeled,
+                )
                 yielded += 1
 
 # ---------- public factory + dataloader ----------
@@ -229,6 +219,7 @@ def build_rotdet_dataset(
     out_size: Tuple[int, int] = (128, 128),
     seed: int = 42,
 ):
+    """Build a dataset whose tensors are already rotated according to their labels."""
     if streaming:
         return RotDetIterable(
             hf_obj,
@@ -266,7 +257,7 @@ def build_rotdet_loader(
         xs   = torch.stack([b[0] for b in batch], dim=0)
         ys   = torch.tensor([b[1] for b in batch], dtype=torch.long)
         metas= [b[2] for b in batch]
-        pils = [b[3] for b in batch]  # Original PIL references for debugging/saving
+        pils = [b[3] for b in batch]  # Rotated PIL references (or None) for debugging/saving
         return xs, ys, metas, pils
     return DataLoader(
         dataset,
@@ -303,6 +294,10 @@ def build_rotdet_dataset_pair(
 ) -> Tuple[Dataset | IterableDataset, Dataset | IterableDataset]:
     """
     Returns (train_set, val_set) with per-page samples.
+
+    Both datasets emit tensors that have already been rotated according to
+    their labels, so the training loop can operate on standard
+    ``(image, rotation_index)`` pairs without applying extra transforms.
 
     Map-style:
       - If val_fraction set -> split HF rows with train_test_split then wrap.

@@ -13,7 +13,7 @@ from safetensors.torch import save_file, load_file
 
 from models import available_model_names, create_model
 from rotdet_model import load_rotdet
-from rotdet_data import build_rotdet_loader, build_rotdet_dataset, build_rotdet_dataset_pair, rotate_on_device
+from rotdet_data import build_rotdet_loader, build_rotdet_dataset, build_rotdet_dataset_pair
 from rotdet_hf import load_hf_dataset  # transparent config picker
 
 from tqdm.auto import tqdm
@@ -29,8 +29,8 @@ def evaluate(model, loader, device) -> Dict:
     with torch.no_grad():
         bar = tqdm(desc="Validating", total=len(loader))
         for x, y, metas, pils in loader:
-            x, y = x.to(device), y.to(device)
-            x = rotate_on_device(x, y)
+            x = x.to(device)
+            y = y.to(device)
             logits = model(x)
             pred = logits.argmax(1)
             if hasattr(model, "compute_loss"):
@@ -260,8 +260,8 @@ def main():
         scaler = torch.amp.GradScaler(enabled=(device == "cuda"))
         torch.backends.cudnn.benchmark = True
         for x, y, metas, pils in train_loader:
-            x, y = x.to(device, non_blocking=True), y.to(device, non_blocking=True)
-            x = rotate_on_device(x, y)
+            x = x.to(device, non_blocking=True)
+            y = y.to(device, non_blocking=True)
             opt.zero_grad(set_to_none=True)
             with torch.amp.autocast(device_type=device):
                 logits = model(x)
