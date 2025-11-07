@@ -6,7 +6,6 @@ from datetime import datetime
 from typing import Dict
 
 import torch
-import torch.nn as nn
 import torch.optim as optim
 
 from datasets import load_dataset, load_from_disk
@@ -32,11 +31,12 @@ def evaluate(model, loader, device) -> Dict:
         for x, y, metas, pils in loader:
             x, y = x.to(device), y.to(device)
             x = rotate_on_device(x, y)
-            logits_raw = model(x)
-            logits = model.compute_logits(logits_raw)
+            logits = model(x)
             pred = logits.argmax(1)
-            loss = model.compute_loss(logits_raw, y) if hasattr(model, "compute_loss") \
-                   else torch.nn.functional.cross_entropy(logits, y)
+            if hasattr(model, "compute_loss"):
+                loss = model.compute_loss(logits, y)
+            else:
+                loss = torch.nn.functional.cross_entropy(logits, y)
             total_loss += loss.item(); n_batches += 1
             correct += (pred == y).sum().item()
             total += y.numel()
@@ -244,7 +244,6 @@ def main():
 
     # --- optim ---
     opt = optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
-    loss_fn = nn.CrossEntropyLoss()
 
     out_dir = Path(args.output_dir)
     best_acc = -1.0
@@ -267,7 +266,6 @@ def main():
             with torch.amp.autocast(device_type=device):
                 logits = model(x)
                 loss = model.compute_loss(logits, y)
-                #loss = loss_fn(logits, y)
             scaler.scale(loss).backward()  
             scaler.step(opt)               
             scaler.update()                

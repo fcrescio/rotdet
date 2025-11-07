@@ -1,13 +1,15 @@
 # evaluate_rotdet.py
-import argparse, numpy as np, torch
+import argparse
 import json
 from pathlib import Path
-from torch.utils.data import DataLoader
+
+import numpy as np
+import torch
+
 from models import available_model_names
 from rotdet_model import load_rotdet
 from rotdet_data import build_rotdet_dataset, build_rotdet_loader, rotate_on_device
 from rotdet_hf import load_hf_dataset
-from datasets import load_dataset
 
 def evaluate(model, loader, device, fail_log=None, save_fail_images=None):
     model.eval()
@@ -27,8 +29,8 @@ def evaluate(model, loader, device, fail_log=None, save_fail_images=None):
         for x, y, metas, pils in loader:
             x, y = x.to(device), y.to(device)
             x = rotate_on_device(x, y)
-            #pred = model(x).argmax(1)
-            pred = model.compute_logits(model(x)).argmax(1)
+            logits = model(x)
+            pred = logits.argmax(1)
             correct += (pred == y).sum().item()
             total += y.numel()
             for t, p in zip(y.tolist(), pred.tolist()):
@@ -52,7 +54,7 @@ def evaluate(model, loader, device, fail_log=None, save_fail_images=None):
                         pidx = metas[i].get("page_idx")
                         fname = f"row{ridx}_page{pidx}_true{record['true']}_pred{record['pred']}.png"
                         path = img_dir / fname
-                        # pils[i] is the exact PIL we evaluated (already rotated if label==1)
+                        # pils[i] references the original page prior to on-device rotation
                         pils[i].save(path)
                         saved_path = str(path)
                         record["saved_image"] = saved_path
