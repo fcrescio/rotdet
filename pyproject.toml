@@ -28,6 +28,7 @@ dependencies = [
     "paddlex[ocr]>=3.2,<3.3",
     "aim>=3.22.0,<4.0.0",
     "matplotlib>=3.9.2,<4.0.0",
+    "requests>=2.31.0",
 ]
 
 [project.scripts]
