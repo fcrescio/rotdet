@@ -109,7 +109,7 @@ def main():
     ap.add_argument("--filename", default="model.safetensors")
     ap.add_argument("--snapshot_dir",type=str,default=None,help="If set, load a pre-built snapshot (DatasetDict with 'train' and 'validation') from disk.")
     # Aim (logging locale)
-    ap.add_argument("--aim", action="store_true", help="Abilita logging Aim (100% locale)")
+    ap.add_argument("--aim", action="store_true", help="Abilita logging Aim")
     ap.add_argument("--aim-repo", type=str, default="runs/aim",
                     help="Cartella repository Aim locale (es. runs/aim)")
     ap.add_argument("--experiment", type=str, default="RotDet-C4",
