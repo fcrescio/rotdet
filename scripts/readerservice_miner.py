@@ -10,13 +10,21 @@ from typing import Dict, Iterable, List, Sequence, Tuple
 import requests
 from datasets import Dataset, DatasetDict, Features, Image, Value
 from tqdm import tqdm
+import pypdfium2 as pdfium
 
 IA_METADATA_URL = "https://archive.org/metadata/{identifier}"
 IA_DOWNLOAD_URL = "https://archive.org/download/{identifier}/{filename}"
 IA_ADVSEARCH_URL = "https://archive.org/advancedsearch.php"
-IMAGE_EXTENSIONS = (".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff")
+DOCUMENT_EXTENSIONS = (".pdf",)
 
 LOGGER = logging.getLogger("readerservice_miner")
+
+
+def sanitize_token(value: str, fallback: str) -> str:
+    """Return a filesystem-safe token derived from ``value``."""
+
+    sanitized = "".join(c for c in value if c.isalnum() or c in ("-", "_"))
+    return sanitized or fallback
 
 
 def parse_args() -> argparse.Namespace:
@@ -118,7 +126,7 @@ def gather_collection_files(
         except requests.RequestException as exc:
             LOGGER.warning("Failed to fetch metadata for %s: %s", identifier, exc)
             continue
-        image_files = list(iter_image_files(metadata, min_bytes=min_bytes))
+        image_files = list(iter_document_files(metadata, min_bytes=min_bytes))
         if not image_files:
             continue
         docs_with_images.add(identifier)
@@ -129,14 +137,14 @@ def gather_collection_files(
     return files, len(docs_with_images)
 
 
-def iter_image_files(metadata: Dict, *, min_bytes: int) -> Iterable[Dict]:
+def iter_document_files(metadata: Dict, *, min_bytes: int) -> Iterable[Dict]:
     for file_info in metadata.get("files", []):
         name = file_info.get("name")
         if not name:
             continue
         lower = name.lower()
         fmt = (file_info.get("format") or "").lower()
-        if not (lower.endswith(IMAGE_EXTENSIONS) or "image" in fmt):
+        if not (lower.endswith(DOCUMENT_EXTENSIONS) or "pdf" in fmt):
             continue
         size = int(file_info.get("size") or 0)
         if size < min_bytes:
@@ -166,7 +174,7 @@ def safe_local_path(root: Path, name: str, fallback_index: int) -> Path:
     return out_path
 
 
-def download_image(
+def download_document(
     session: requests.Session,
     identifier: str,
     file_info: Dict,
@@ -191,23 +199,79 @@ def download_image(
     return local_path
 
 
+def convert_document_to_images(
+    document_path: Path,
+    *,
+    image_root: Path,
+    identifier: str,
+    overwrite: bool,
+    dpi: int,
+) -> List[Path]:
+    suffix = document_path.suffix.lower()
+    if suffix == ".pdf":
+        return render_pdf_to_images(
+            document_path,
+            image_root=image_root,
+            identifier=identifier,
+            overwrite=overwrite,
+            dpi=dpi,
+        )
+    raise RuntimeError(f"Unsupported document type: {suffix or 'unknown'}")
+
+
+def render_pdf_to_images(
+    document_path: Path,
+    *,
+    image_root: Path,
+    identifier: str,
+    overwrite: bool,
+    dpi: int,
+) -> List[Path]:
+    token = sanitize_token(identifier, "reader")
+    prefix = sanitize_token(document_path.stem or token, token)
+    doc_dir = image_root / token
+    doc_dir.mkdir(parents=True, exist_ok=True)
+    pdf = pdfium.PdfDocument(str(document_path))
+    page_paths: List[Path] = []
+    scale = max(dpi, 72) / 72.0
+    for page_number in range(len(pdf)):
+        page = pdf[page_number]
+        out_path = doc_dir / f"{prefix}_page_{page_number + 1:04d}.jpg"
+        if out_path.exists() and not overwrite:
+            page_paths.append(out_path)
+            page.close()
+            continue
+        bitmap = page.render(scale=scale)
+        pil_image = bitmap.to_pil()
+        pil_image.save(out_path, format="JPEG")
+        bitmap.close()
+        page.close()
+        page_paths.append(out_path)
+    pdf.close()
+    return page_paths
+
+
 def build_records(
     *,
     collection: str,
     files: Sequence[Tuple[str, Dict]],
-    dest: Path,
+    image_dest: Path,
+    document_dest: Path,
     overwrite: bool,
     chunk_bytes: int,
+    render_dpi: int = 200,
 ) -> List[Dict]:
     session = requests.Session()
     records: List[Dict] = []
-    for idx, (identifier, file_info) in enumerate(tqdm(files, desc="Downloading images")):
+    document_dest.mkdir(parents=True, exist_ok=True)
+    image_dest.mkdir(parents=True, exist_ok=True)
+    for idx, (identifier, file_info) in enumerate(tqdm(files, desc="Downloading documents")):
         try:
-            local_path = download_image(
+            local_path = download_document(
                 session,
                 identifier,
                 file_info,
-                dest,
+                document_dest,
                 overwrite=overwrite,
                 chunk_bytes=chunk_bytes,
                 index=idx,
@@ -215,18 +279,35 @@ def build_records(
         except requests.RequestException as exc:
             LOGGER.warning("Failed to download %s: %s", file_info.get("name"), exc)
             continue
-        record = {
-            "image": str(local_path),
-            "page_index": idx,
-            "filename": file_info["name"],
-            "original_url": IA_DOWNLOAD_URL.format(identifier=identifier, filename=file_info["name"]),
-            "bytes": int(file_info["size"]),
-            "md5": file_info.get("md5") or "",
-            "sha1": file_info.get("sha1") or "",
-            "source": collection,
-            "document": identifier,
-        }
-        records.append(record)
+        try:
+            page_paths = convert_document_to_images(
+                local_path,
+                image_root=image_dest,
+                identifier=identifier,
+                overwrite=overwrite,
+                dpi=render_dpi,
+            )
+        except RuntimeError as exc:
+            LOGGER.warning("Failed to convert %s into images: %s", local_path, exc)
+            continue
+        if not page_paths:
+            LOGGER.warning("No pages were rendered from %s; skipping", local_path)
+            continue
+        for page_idx, page_path in enumerate(page_paths):
+            record = {
+                "image": str(page_path),
+                "page_index": page_idx,
+                "filename": file_info["name"],
+                "original_url": IA_DOWNLOAD_URL.format(
+                    identifier=identifier, filename=file_info["name"]
+                ),
+                "bytes": page_path.stat().st_size,
+                "md5": file_info.get("md5") or "",
+                "sha1": file_info.get("sha1") or "",
+                "source": collection,
+                "document": identifier,
+            }
+            records.append(record)
     return records
 
 
@@ -294,6 +375,7 @@ def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
     out_dir = Path(args.output_dir).expanduser().resolve()
     image_dir = out_dir / "images"
+    document_dir = out_dir / "documents"
     LOGGER.info("Fetching metadata for %s", args.collection)
     metadata = fetch_collection_metadata(args.collection)
     LOGGER.info("Discovering items within the collection")
@@ -312,7 +394,8 @@ def main() -> None:
     records = build_records(
         collection=args.collection,
         files=files,
-        dest=image_dir,
+        image_dest=image_dir,
+        document_dest=document_dir,
         overwrite=args.overwrite,
         chunk_bytes=args.chunk_bytes,
     )
