@@ -5,7 +5,7 @@ import argparse
 import json
 import logging
 from pathlib import Path
-from typing import Dict, Iterable, List, Sequence
+from typing import Dict, Iterable, List, Sequence, Tuple
 
 import requests
 from datasets import Dataset, DatasetDict, Features, Image, Value
@@ -13,6 +13,7 @@ from tqdm import tqdm
 
 IA_METADATA_URL = "https://archive.org/metadata/{identifier}"
 IA_DOWNLOAD_URL = "https://archive.org/download/{identifier}/{filename}"
+IA_ADVSEARCH_URL = "https://archive.org/advancedsearch.php"
 IMAGE_EXTENSIONS = (".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tif", ".tiff")
 
 LOGGER = logging.getLogger("readerservice_miner")
@@ -76,6 +77,58 @@ def fetch_collection_metadata(identifier: str) -> Dict:
     return resp.json()
 
 
+def iter_collection_items(collection: str, *, page_size: int = 500) -> Iterable[str]:
+    page = 1
+    while True:
+        params = {
+            "q": f"collection:{collection}",
+            "fl[]": "identifier",
+            "sort[]": "identifier asc",
+            "rows": page_size,
+            "page": page,
+            "output": "json",
+        }
+        resp = requests.get(IA_ADVSEARCH_URL, params=params, timeout=60)
+        resp.raise_for_status()
+        payload = resp.json()
+        docs = payload.get("response", {}).get("docs", [])
+        if not docs:
+            break
+        for doc in docs:
+            identifier = doc.get("identifier")
+            if identifier and identifier != collection:
+                yield identifier
+        num_found = payload.get("response", {}).get("numFound", 0)
+        if page * page_size >= num_found:
+            break
+        page += 1
+
+
+def gather_collection_files(
+    collection: str,
+    *,
+    min_bytes: int,
+    max_images: int | None,
+) -> Tuple[List[Tuple[str, Dict]], int]:
+    files: List[Tuple[str, Dict]] = []
+    docs_with_images = set()
+    for identifier in iter_collection_items(collection):
+        try:
+            metadata = fetch_collection_metadata(identifier)
+        except requests.RequestException as exc:
+            LOGGER.warning("Failed to fetch metadata for %s: %s", identifier, exc)
+            continue
+        image_files = list(iter_image_files(metadata, min_bytes=min_bytes))
+        if not image_files:
+            continue
+        docs_with_images.add(identifier)
+        for file_info in image_files:
+            files.append((identifier, file_info))
+            if max_images and len(files) >= max_images:
+                return files, len(docs_with_images)
+    return files, len(docs_with_images)
+
+
 def iter_image_files(metadata: Dict, *, min_bytes: int) -> Iterable[Dict]:
     for file_info in metadata.get("files", []):
         name = file_info.get("name")
@@ -115,7 +168,7 @@ def safe_local_path(root: Path, name: str, fallback_index: int) -> Path:
 
 def download_image(
     session: requests.Session,
-    collection: str,
+    identifier: str,
     file_info: Dict,
     destination_dir: Path,
     *,
@@ -128,7 +181,7 @@ def download_image(
     if local_path.exists() and not overwrite:
         LOGGER.debug("Skipping existing %s", local_path)
         return local_path
-    url = IA_DOWNLOAD_URL.format(identifier=collection, filename=file_info["name"])
+    url = IA_DOWNLOAD_URL.format(identifier=identifier, filename=file_info["name"])
     with session.get(url, stream=True, timeout=60) as resp:
         resp.raise_for_status()
         with open(local_path, "wb") as handle:
@@ -141,18 +194,18 @@ def download_image(
 def build_records(
     *,
     collection: str,
-    files: Sequence[Dict],
+    files: Sequence[Tuple[str, Dict]],
     dest: Path,
     overwrite: bool,
     chunk_bytes: int,
 ) -> List[Dict]:
     session = requests.Session()
     records: List[Dict] = []
-    for idx, file_info in enumerate(tqdm(files, desc="Downloading images")):
+    for idx, (identifier, file_info) in enumerate(tqdm(files, desc="Downloading images")):
         try:
             local_path = download_image(
                 session,
-                collection,
+                identifier,
                 file_info,
                 dest,
                 overwrite=overwrite,
@@ -166,11 +219,12 @@ def build_records(
             "image": str(local_path),
             "page_index": idx,
             "filename": file_info["name"],
-            "original_url": IA_DOWNLOAD_URL.format(identifier=collection, filename=file_info["name"]),
+            "original_url": IA_DOWNLOAD_URL.format(identifier=identifier, filename=file_info["name"]),
             "bytes": int(file_info["size"]),
             "md5": file_info.get("md5") or "",
             "sha1": file_info.get("sha1") or "",
             "source": collection,
+            "document": identifier,
         }
         records.append(record)
     return records
@@ -189,6 +243,7 @@ def build_hf_dataset(records: Sequence[Dict], *, val_fraction: float, seed: int,
             "md5": Value("string"),
             "sha1": Value("string"),
             "source": Value("string"),
+            "document": Value("string"),
         }
     )
     columns: Dict[str, List] = {key: [] for key in features.keys()}
@@ -241,12 +296,19 @@ def main() -> None:
     image_dir = out_dir / "images"
     LOGGER.info("Fetching metadata for %s", args.collection)
     metadata = fetch_collection_metadata(args.collection)
-    files = list(iter_image_files(metadata, min_bytes=args.min_bytes))
-    if args.max_images:
-        files = files[: args.max_images]
+    LOGGER.info("Discovering items within the collection")
+    files, num_documents = gather_collection_files(
+        args.collection,
+        min_bytes=args.min_bytes,
+        max_images=args.max_images,
+    )
     if not files:
         raise SystemExit("No qualifying images found in the specified collection.")
-    LOGGER.info("Preparing to download %d images", len(files))
+    LOGGER.info(
+        "Preparing to download %d images spanning %d documents",
+        len(files),
+        num_documents,
+    )
     records = build_records(
         collection=args.collection,
         files=files,
