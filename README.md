@@ -196,8 +196,9 @@ python scripts/readerservice_miner.py \
   --max-images 2000
 ```
 
-The script downloads the images, writes them under `data/readerservice/images/`, materializes a HF-compliant dataset via
-`datasets.save_to_disk`, and produces a `manifest.json` with provenance info so you can train with
+The script downloads the source documents (PDFs on Internet Archive), renders each page as an image under
+`data/readerservice/images/`, saves the original files under `data/readerservice/documents/`, materializes a HF-compliant
+dataset via `datasets.save_to_disk`, and produces a `manifest.json` with provenance info so you can train with
 `load_from_disk("data/readerservice/hf_dataset")` directly.
 
 ---
