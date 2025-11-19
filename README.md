@@ -178,6 +178,23 @@ or explicitly:
 uv run rotdet-train --dataset HuggingFaceM4/Docmatix --config zero-shot-exp
 ```
 
+### 📥 Mining Reader Service scans locally
+
+Need a lightweight document dataset without relying on an existing Hugging Face repo? Use the new helper script to mine the
+[`readerservice`](https://archive.org/details/readerservice) collection from Internet Archive and export it as a Hugging Face
+`DatasetDict`:
+
+```bash
+python scripts/readerservice_miner.py \
+  --output-dir data/readerservice \
+  --val-fraction 0.1 \
+  --max-images 2000
+```
+
+The script downloads the images, writes them under `data/readerservice/images/`, materializes a HF-compliant dataset via
+`datasets.save_to_disk`, and produces a `manifest.json` with provenance info so you can train with
+`load_from_disk("data/readerservice/hf_dataset")` directly.
+
 ---
 
 ## 🧪 Experiment management
