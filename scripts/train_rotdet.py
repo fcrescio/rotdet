@@ -8,7 +8,7 @@ from typing import Dict
 import torch
 import torch.optim as optim
 
-from datasets import load_dataset, load_from_disk
+from datasets import DatasetDict, concatenate_datasets, load_dataset, load_from_disk
 from safetensors.torch import save_file, load_file
 
 from models import available_model_names, create_model
@@ -107,7 +107,16 @@ def main():
                     help="Start from fcrescio/rotdet weights")
     ap.add_argument("--repo-id", default="fcrescio/rotdet")
     ap.add_argument("--filename", default="model.safetensors")
-    ap.add_argument("--snapshot_dir",type=str,default=None,help="If set, load a pre-built snapshot (DatasetDict with 'train' and 'validation') from disk.")
+    ap.add_argument(
+        "--snapshot_dir",
+        action="append",
+        dest="snapshot_dirs",
+        default=None,
+        help=(
+            "If set, load one or more pre-built snapshots (DatasetDict with 'train' "
+            "and 'validation') from disk. May be passed multiple times."
+        ),
+    )
     # Aim (logging locale)
     ap.add_argument("--aim", action="store_true", help="Abilita logging Aim")
     ap.add_argument("--aim-repo", type=str, default="runs/aim",
@@ -183,26 +192,36 @@ def main():
 
 
     # --- data (two streams for streaming train/val) ---
-    if args.snapshot_dir:
-        # Pre-split snapshot: no downloads, no internal splitting
-        dsd = load_from_disk(args.snapshot_dir)  # expects {'train', 'validation'}
+    if args.snapshot_dirs:
+        # Pre-split snapshots: no downloads, no internal splitting
+        snap_dicts = [load_from_disk(p) for p in args.snapshot_dirs]
+
+        if len(snap_dicts) == 1:
+            dsd = snap_dicts[0]
+        else:
+            train_parts = [sd["train"] for sd in snap_dicts]
+            val_parts = [sd["validation"] for sd in snap_dicts]
+            dsd = DatasetDict(
+                train=concatenate_datasets(train_parts),
+                validation=concatenate_datasets(val_parts),
+            )
 
         # If your builder can take explicit splits, build each split independently.
         # (Most repos expose a single-split builder under the hood; if yours doesn’t,
         #  see the alt. block below.)
         train_set = build_rotdet_dataset(
-        dsd["train"],
-        streaming=False,
-        rotate_prob=args.rotate_prob,
-        pages_per_doc=args.pages_per_doc,
-        seed=args.seed,
+            dsd["train"],
+            streaming=False,
+            rotate_prob=args.rotate_prob,
+            pages_per_doc=args.pages_per_doc,
+            seed=args.seed,
         )
         val_set = build_rotdet_dataset(
-        dsd["validation"],
-        streaming=False,
-        rotate_prob=args.rotate_prob,
-        pages_per_doc=args.pages_per_doc,
-        seed=args.seed,
+            dsd["validation"],
+            streaming=False,
+            rotate_prob=args.rotate_prob,
+            pages_per_doc=args.pages_per_doc,
+            seed=args.seed,
         )
         shuffle_flag = True
     elif args.streaming:
