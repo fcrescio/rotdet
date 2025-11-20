@@ -29,18 +29,27 @@ def evaluate_paddle(
     model = DocImgOrientationClassification(model_name="PP-LCNet_x1_0_doc_ori")
 
     with torch.no_grad():
-        for _, y, metas, pils in loader:
-            preds = []
-            for (i, r) in enumerate(y):
-                pils[i] = pils[i].rotate(-1*r*90)
-            for pil in pils:
-                arr = np.asarray(pil) 
+        for x, y, metas, pils in loader:
+            preds: List[int] = []
+
+            # Build a batch of PIL images that match the already-rotated samples
+            pil_batch: List[Image.Image] = []
+            for i in range(len(y)):
+                pil = pils[i]
+                if pil is None:
+                    # Map datasets don't carry PILs by default; rebuild from tensors
+                    arr = x[i].detach().cpu().squeeze(0).numpy()
+                    arr = (arr * 255.0).clip(0, 255).astype(np.uint8)
+                    pil = Image.fromarray(arr, mode="L")
+                pil_batch.append(pil)
+
+            for pil in pil_batch:
+                arr = np.asarray(pil.convert("RGB"))
                 output = model.predict(arr)
                 for res in output:
                     res.print(json_format=False)
                     preds.append(res.json['res']['class_ids'][0])
 
-            #preds = predictor.predict_batch(pils)
             y_list = y.tolist()
 
             for t, p in zip(y_list, preds):
@@ -62,7 +71,7 @@ def evaluate_paddle(
                         pidx = metas[i].get("page_idx")
                         fname = f"row{ridx}_page{pidx}_true{record['true']}_pred{record['pred']}.png"
                         path = img_dir / fname
-                        pils[i].save(path)
+                        pil_batch[i].save(path)
                         record["saved_image"] = str(path)
                     if fail_fp:
                         fail_fp.write(json.dumps(record, ensure_ascii=False) + "\n")
