@@ -85,8 +85,11 @@ def fetch_collection_metadata(identifier: str) -> Dict:
     return resp.json()
 
 
-def iter_collection_items(collection: str, *, page_size: int = 500) -> Iterable[str]:
+def iter_collection_items(
+    collection: str, *, page_size: int = 500, progress: tqdm | None = None
+) -> Iterable[str]:
     page = 1
+    total_items = None
     while True:
         params = {
             "q": f"collection:{collection}",
@@ -100,13 +103,19 @@ def iter_collection_items(collection: str, *, page_size: int = 500) -> Iterable[
         resp.raise_for_status()
         payload = resp.json()
         docs = payload.get("response", {}).get("docs", [])
+        num_found = payload.get("response", {}).get("numFound", 0)
+        if total_items is None:
+            total_items = max(0, num_found - 1)
+            if progress is not None:
+                progress.reset(total=total_items or None)
         if not docs:
             break
         for doc in docs:
             identifier = doc.get("identifier")
             if identifier and identifier != collection:
+                if progress is not None:
+                    progress.update(1)
                 yield identifier
-        num_found = payload.get("response", {}).get("numFound", 0)
         if page * page_size >= num_found:
             break
         page += 1
@@ -120,20 +129,22 @@ def gather_collection_files(
 ) -> Tuple[List[Tuple[str, Dict]], int]:
     files: List[Tuple[str, Dict]] = []
     docs_with_images = set()
-    for identifier in iter_collection_items(collection):
-        try:
-            metadata = fetch_collection_metadata(identifier)
-        except requests.RequestException as exc:
-            LOGGER.warning("Failed to fetch metadata for %s: %s", identifier, exc)
-            continue
-        image_files = list(iter_document_files(metadata, min_bytes=min_bytes))
-        if not image_files:
-            continue
-        docs_with_images.add(identifier)
-        for file_info in image_files:
-            files.append((identifier, file_info))
-            if max_images and len(files) >= max_images:
-                return files, len(docs_with_images)
+    with tqdm(desc="Discovering documents", unit="doc", total=0) as progress:
+        for identifier in iter_collection_items(collection, progress=progress):
+            try:
+                metadata = fetch_collection_metadata(identifier)
+            except requests.RequestException as exc:
+                LOGGER.warning("Failed to fetch metadata for %s: %s", identifier, exc)
+                continue
+            image_files = list(iter_document_files(metadata, min_bytes=min_bytes))
+            if not image_files:
+                continue
+            docs_with_images.add(identifier)
+            progress.set_postfix(doc_with_images=len(docs_with_images), images=len(files))
+            for file_info in image_files:
+                files.append((identifier, file_info))
+                if max_images and len(files) >= max_images:
+                    return files, len(docs_with_images)
     return files, len(docs_with_images)
 
 
