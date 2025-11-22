@@ -5,6 +5,7 @@ from pathlib import Path
 
 import numpy as np
 import torch
+from datasets import concatenate_datasets, load_from_disk
 
 from models import available_model_names
 from rotdet_model import load_rotdet
@@ -79,6 +80,16 @@ def main():
     ap.add_argument("--batch_size", type=int, default=64)
     ap.add_argument("--num_workers", type=int, default=2)
     ap.add_argument("--rotate_prob", type=float, default=0.5)
+    ap.add_argument(
+        "--snapshot_dir",
+        action="append",
+        dest="snapshot_dirs",
+        default=None,
+        help=(
+            "If set, load one or more pre-built snapshots (DatasetDict with splits) "
+            "from disk. May be passed multiple times."
+        ),
+    )
     ap.add_argument("--fail_log", default=None, help="Path to write JSONL with failed samples.")
     ap.add_argument("--save_fail_images", default=None, help="Directory to save failed page images.")
 
@@ -115,21 +126,35 @@ def main():
         model_kwargs=model_kwargs,
     )
 
-    hf_obj = load_hf_dataset(
-        args.dataset,
-        split=args.split,
-        config=args.config,
-        streaming=args.streaming,
-    )
+    if args.snapshot_dirs:
+        snap_parts = []
+        for p in args.snapshot_dirs:
+            dsd = load_from_disk(p)
+            if args.split not in dsd:
+                raise SystemExit(f"Split '{args.split}' not found in snapshot: {p}")
+            snap_parts.append(dsd[args.split])
+        if len(snap_parts) == 1:
+            hf_obj = snap_parts[0]
+        else:
+            hf_obj = concatenate_datasets(snap_parts)
+        streaming_flag = False
+    else:
+        hf_obj = load_hf_dataset(
+            args.dataset,
+            split=args.split,
+            config=args.config,
+            streaming=args.streaming,
+        )
+        streaming_flag = args.streaming
     ds = build_rotdet_dataset(
         hf_obj,
-        streaming=args.streaming,
+        streaming=streaming_flag,
         rotate_prob=args.rotate_prob,
         pages_per_doc=args.pages_per_doc,
         max_samples=(args.max_samples if args.max_samples > 0 else None),
     )
     loader = build_rotdet_loader(
-        ds, batch_size=args.batch_size, num_workers=args.num_workers, device=device, streaming=args.streaming
+        ds, batch_size=args.batch_size, num_workers=args.num_workers, device=device, streaming=streaming_flag
     )
 
     acc, cm = evaluate(model, loader, device, args.fail_log, args.save_fail_images)

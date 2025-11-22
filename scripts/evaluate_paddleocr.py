@@ -5,6 +5,7 @@ from typing import List, Tuple, Any, Dict
 import torch
 from torch.utils.data import DataLoader
 from PIL import Image
+from datasets import concatenate_datasets, load_from_disk
 
 from rotdet_data import build_rotdet_dataset, build_rotdet_loader
 from rotdet_hf import load_hf_dataset
@@ -98,25 +99,50 @@ def main():
     ap.add_argument("--num_workers", type=int, default=2)
     ap.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
     ap.add_argument("--rotate_prob", type=float, default=0.5)
+    ap.add_argument(
+        "--snapshot_dir",
+        action="append",
+        dest="snapshot_dirs",
+        default=None,
+        help=(
+            "If set, load one or more pre-built snapshots (DatasetDict with splits) "
+            "from disk. May be passed multiple times."
+        ),
+    )
 
     ap.add_argument("--fail_log", default=None)
     ap.add_argument("--save_fail_images", default=None)
 
     args = ap.parse_args()
 
-    hf_obj = load_hf_dataset(
-        args.dataset, split=args.split, config=args.config, streaming=args.streaming
-    )
+    if args.snapshot_dirs:
+        snap_parts = []
+        for p in args.snapshot_dirs:
+            dsd = load_from_disk(p)
+            if args.split not in dsd:
+                raise SystemExit(f"Split '{args.split}' not found in snapshot: {p}")
+            snap_parts.append(dsd[args.split])
+        if len(snap_parts) == 1:
+            hf_obj = snap_parts[0]
+        else:
+            hf_obj = concatenate_datasets(snap_parts)
+        streaming_flag = False
+    else:
+        hf_obj = load_hf_dataset(
+            args.dataset, split=args.split, config=args.config, streaming=args.streaming
+        )
+        streaming_flag = args.streaming
+
     ds = build_rotdet_dataset(
         hf_obj,
-        streaming=args.streaming,
+        streaming=streaming_flag,
         rotate_prob=args.rotate_prob,
         pages_per_doc=args.pages_per_doc,
         max_samples=(args.max_samples if args.max_samples > 0 else None),
     )
     loader = build_rotdet_loader(
         ds, batch_size=args.batch_size, num_workers=args.num_workers,
-        device=args.device, streaming=args.streaming
+        device=args.device, streaming=streaming_flag
     )
 
     acc, cm = evaluate_paddle(loader, args.fail_log, args.save_fail_images, device=args.device)
