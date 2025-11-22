@@ -48,7 +48,9 @@ def evaluate_paddle(
                 output = model.predict(arr)
                 for res in output:
                     res.print(json_format=False)
-                    preds.append(res.json['res']['class_ids'][0])
+                    rotation_orig = res.json['res']['class_ids'][0]
+                    rotation = rotation_orig if rotation_orig in [0,2] else (3 if rotation_orig == 1 else 1)
+                    preds.append(rotation)
 
             y_list = y.tolist()
 
