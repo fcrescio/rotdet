@@ -37,9 +37,19 @@ rotdet-eval = "evaluate_rotdet:main"
 rotdet-train = "train_rotdet:main"
 rotdet-snapshot = "snapshot_stream:main"
 paddleocr-eval = "evaluate_paddleocr:main"
+paddleocr-filter = "paddleocr_prefilter:main"
 
 [tool.setuptools]
-py-modules = ["rotdet_model", "rotdet_data", "rotdet_hf", "evaluate_rotdet", "train_rotdet", "snapshot_stream", "evaluate_paddleocr"]
+py-modules = [
+    "rotdet_model",
+    "rotdet_data",
+    "rotdet_hf",
+    "evaluate_rotdet",
+    "train_rotdet",
+    "snapshot_stream",
+    "evaluate_paddleocr",
+    "paddleocr_prefilter",
+]
 
 [tool.black]
 line-length = 88
