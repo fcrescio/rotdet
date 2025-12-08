@@ -98,6 +98,18 @@ def main():
     ap.add_argument("--weight-decay", type=float, default=0.0)
     ap.add_argument("--rotate-prob", type=float, default=0.5)
     ap.add_argument("--seed", type=int, default=42)
+    ap.add_argument(
+        "--early-stop-patience",
+        type=int,
+        default=0,
+        help="Number of consecutive epochs without val_loss improvement before stopping (0 disables).",
+    )
+    ap.add_argument(
+        "--early-stop-delta",
+        type=float,
+        default=0.0,
+        help="Minimum change in val_loss to qualify as an improvement.",
+    )
     # checkpoints
     ap.add_argument("--output-dir", default="checkpoints")
     ap.add_argument("--resume", default=None, help="Path to .safetensors to resume weights")
@@ -266,6 +278,8 @@ def main():
 
     out_dir = Path(args.output_dir)
     best_acc = -1.0
+    best_val_loss = float("inf")
+    early_stop_counter = 0
     history = {"epochs": [], "best": {}}
 
     # --- train loop ---
@@ -312,6 +326,21 @@ def main():
         if eval_out['val_acc'] > best_acc:
             best_acc = eval_out['val_acc']
             best_path = save_checkpoint(model, out_dir, "best")
+
+        # early stopping based on validation loss
+        current_val_loss = eval_out["val_loss"]
+        improved = current_val_loss < (best_val_loss - args.early_stop_delta)
+        if improved:
+            best_val_loss = current_val_loss
+            early_stop_counter = 0
+        else:
+            early_stop_counter += 1
+            if args.early_stop_patience and early_stop_counter >= args.early_stop_patience:
+                print(
+                    f"Early stopping triggered after {early_stop_counter} "
+                    f"epochs without val_loss improvement (best {best_val_loss:.4f})."
+                )
+                break
 
         row = {
             "epoch": epoch,
