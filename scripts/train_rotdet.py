@@ -81,6 +81,7 @@ def main():
     ap.add_argument("--config", default=None, help="HF dataset config (auto-picked if omitted)")
     ap.add_argument("--split", default="train")
     ap.add_argument("--streaming", action="store_true")
+    ap.add_argument("--input-size", type=int, default=128)
     ap.add_argument("--pages-per-doc", type=int, default=2)
     # validation sizing
     ap.add_argument("--val-fraction", type=float, default=0.1,
@@ -179,7 +180,12 @@ def main():
         overrides = model_overrides or {}
         model = create_model(args.model, **overrides).to(device)
 
+    total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    print(f"Trainable parameters: {total_params:,}")
+
     maybe_resume(model, args.resume, device)
+
+    out_size = (args.input_size, args.input_size)
 
     # --- Aim setup (opzionale) ---
     aim_run = None
@@ -227,6 +233,7 @@ def main():
             rotate_prob=args.rotate_prob,
             pages_per_doc=args.pages_per_doc,
             seed=args.seed,
+            out_size=out_size,
         )
         val_set = build_rotdet_dataset(
             dsd["validation"],
@@ -234,6 +241,7 @@ def main():
             rotate_prob=args.rotate_prob,
             pages_per_doc=args.pages_per_doc,
             seed=args.seed,
+            out_size=out_size,
         )
         shuffle_flag = True
     elif args.streaming:
@@ -250,6 +258,7 @@ def main():
             val_fraction=None,
             val_pages=args.val_pages,
             max_train_pages=(args.max_train_pages or None),
+            out_size=out_size,
         )
         shuffle_flag = False
     else:
@@ -263,6 +272,7 @@ def main():
             val_pages=None,
             max_train_pages=(args.max_train_pages or None),
             seed=args.seed,
+            out_size=out_size,
         )
         shuffle_flag = True
 

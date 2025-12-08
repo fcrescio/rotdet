@@ -148,6 +148,17 @@ class EquivariantHeadC4(nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.conv1x1(x)
 
+class OrientationHeadC4(nn.Module):
+    def __init__(self, in_ch, out_ch: int = 4):
+        super().__init__()
+        if out_ch != 4:
+            raise RuntimeError("Only num_classes = 4 is supported by this head.")
+        self.conv = GroupConvC4(in_ch, 1, k=1)
+
+    def forward(self, x):
+        x = self.conv(x)          # (B, 4, H, W)
+        return x.mean(dim=(2,3))  # (B, 4)
+
 
 class C4Net(RotDetModel):
     """Rotation detection network based on C4 group convolutions."""
@@ -181,6 +192,8 @@ class C4Net(RotDetModel):
             self.head: nn.Module = InvariantHeadC4(c, num_classes)
         elif head_type == "equivariant":
             self.head = EquivariantHeadC4(c, out_ch=num_classes)
+        elif head_type == "orientation":
+            self.head = OrientationHeadC4(c, out_ch=num_classes)
         else:
             raise ValueError("head_type must be 'invariant' or 'equivariant'")
         self.head_type = head_type

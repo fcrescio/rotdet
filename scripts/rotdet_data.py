@@ -32,7 +32,7 @@ def apply_random_rotation(pil: Image.Image, rotate_prob: float) -> Tuple[Image.I
     if random.random() < rotate_prob:
         k = random.choice([1, 2, 3])
         # PIL rotates counter-clockwise for positive angles, matching torch.rot90.
-        rotated = pil.rotate(90 * k, expand=False)
+        rotated = pil.rotate(90 * k, expand=True)
         return rotated, k
     return pil, 0
 

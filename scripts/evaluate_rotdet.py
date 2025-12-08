@@ -72,6 +72,7 @@ def main():
     ap.add_argument("--repo_id", default="fcrescio/rotdet")
     ap.add_argument("--filename", default="model.safetensors")
     ap.add_argument("--dataset", default="nielsr/funsd")
+    ap.add_argument("--input-size", type=int, default=128)
     ap.add_argument("--config", default=None, help="HF dataset config (e.g. images / zero-shot-exp). If omitted, auto-pick.")
     ap.add_argument("--split", default="test")
     ap.add_argument("--streaming", action="store_true")
@@ -106,6 +107,8 @@ def main():
         help="Optional JSON string with keyword arguments to override model defaults.",
     )
     args = ap.parse_args()
+
+    out_size = (args.input_size, args.input_size)
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model_kwargs = None
@@ -152,6 +155,7 @@ def main():
         rotate_prob=args.rotate_prob,
         pages_per_doc=args.pages_per_doc,
         max_samples=(args.max_samples if args.max_samples > 0 else None),
+        out_size=out_size,
     )
     loader = build_rotdet_loader(
         ds, batch_size=args.batch_size, num_workers=args.num_workers, device=device, streaming=streaming_flag

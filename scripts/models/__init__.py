@@ -24,6 +24,26 @@ _MODEL_REGISTRY: Dict[str, RegistryEntry] = {
             "head_type": "equivariant",
         },
     ),
+    "c4neti": (
+        C4Net,
+        {
+            "in_ch": 1,
+            "stem_ch": 16,
+            "widths": (32, 64, 128),
+            "num_classes": 4,
+            "head_type": "invariant",
+        },
+    ),
+    "c4neto": (
+        C4Net,
+        {
+            "in_ch": 1,
+            "stem_ch": 16,
+            "widths": (32, 64, 128),
+            "num_classes": 4,
+            "head_type": "orientation",
+        },
+    ),
 }
 
 
