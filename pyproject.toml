@@ -30,6 +30,7 @@ dependencies = [
     "matplotlib>=3.9.2,<4.0.0",
     "requests>=2.31.0",
     "pypdfium2>=4.30.0,<5.0.0",
+    "mcp>=1.0.0",
 ]
 
 [project.scripts]
@@ -38,6 +39,7 @@ rotdet-train = "train_rotdet:main"
 rotdet-snapshot = "snapshot_stream:main"
 paddleocr-eval = "evaluate_paddleocr:main"
 paddleocr-filter = "paddleocr_prefilter:main"
+rotdet-mcp = "rotdet_mcp_server:main"
 
 [tool.setuptools]
 py-modules = [
@@ -49,6 +51,7 @@ py-modules = [
     "snapshot_stream",
     "evaluate_paddleocr",
     "paddleocr_prefilter",
+    "rotdet_mcp_server",
 ]
 
 [tool.black]
