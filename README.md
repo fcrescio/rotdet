@@ -267,6 +267,16 @@ uv run pytest         # (optional) run tests
 
 ---
 
+## 🤖 MCP evaluation server
+
+RotDet includes an MCP server that exposes the evaluation pipeline as a tool for
+agentic clients. See the full usage guide, including schema details and example
+client configurations:
+
+* [`docs/evaluate-mcp-server.md`](docs/evaluate-mcp-server.md)【F:docs/evaluate-mcp-server.md†L1-L163】
+
+---
+
 ## 💡 Experiment tips
 
 * Use `--output-dir` per experiment (each run auto-timestamps).
