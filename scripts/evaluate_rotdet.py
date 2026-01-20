@@ -67,6 +67,78 @@ def evaluate(model, loader, device, fail_log=None, save_fail_images=None):
 
     return (correct / total) if total else 0.0, cm
 
+def run_evaluation(
+    repo_id,
+    filename,
+    dataset,
+    input_size=128,
+    config=None,
+    split="test",
+    streaming=False,
+    max_samples=0,
+    pages_per_doc=None,
+    batch_size=64,
+    num_workers=2,
+    rotate_prob=0.5,
+    snapshot_dirs=None,
+    fail_log=None,
+    save_fail_images=None,
+    model="c4net",
+    model_kwargs=None,
+):
+    out_size = (input_size, input_size)
+
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+
+    model = load_rotdet(
+        repo_id,
+        filename,
+        device,
+        model=model,
+        model_kwargs=model_kwargs,
+    )
+
+    if snapshot_dirs:
+        snap_parts = []
+        for p in snapshot_dirs:
+            dsd = load_from_disk(p)
+            if split not in dsd:
+                raise SystemExit(f"Split '{split}' not found in snapshot: {p}")
+            snap_parts.append(dsd[split])
+        if len(snap_parts) == 1:
+            hf_obj = snap_parts[0]
+        else:
+            hf_obj = concatenate_datasets(snap_parts)
+        streaming_flag = False
+    else:
+        hf_obj = load_hf_dataset(
+            dataset,
+            split=split,
+            config=config,
+            streaming=streaming,
+        )
+        streaming_flag = streaming
+    ds = build_rotdet_dataset(
+        hf_obj,
+        streaming=streaming_flag,
+        rotate_prob=rotate_prob,
+        pages_per_doc=pages_per_doc,
+        max_samples=(max_samples if max_samples > 0 else None),
+        out_size=out_size,
+    )
+    loader = build_rotdet_loader(
+        ds, batch_size=batch_size, num_workers=num_workers, device=device, streaming=streaming_flag
+    )
+
+    acc, cm = evaluate(model, loader, device, fail_log, save_fail_images)
+    sample_count = len(ds) if hasattr(ds, "__len__") else "streamed"
+    return {
+        "samples": sample_count,
+        "accuracy": acc,
+        "confusion_matrix": cm.tolist(),
+    }
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--repo_id", default="fcrescio/rotdet")
@@ -108,9 +180,6 @@ def main():
     )
     args = ap.parse_args()
 
-    out_size = (args.input_size, args.input_size)
-
-    device = "cuda" if torch.cuda.is_available() else "cpu"
     model_kwargs = None
     if args.model_kwargs:
         try:
@@ -121,51 +190,29 @@ def main():
             raise SystemExit("--model-kwargs must decode to a JSON object")
         model_kwargs = parsed
 
-    model = load_rotdet(
-        args.repo_id,
-        args.filename,
-        device,
+    result = run_evaluation(
+        repo_id=args.repo_id,
+        filename=args.filename,
+        dataset=args.dataset,
+        input_size=args.input_size,
+        config=args.config,
+        split=args.split,
+        streaming=args.streaming,
+        max_samples=args.max_samples,
+        pages_per_doc=args.pages_per_doc,
+        batch_size=args.batch_size,
+        num_workers=args.num_workers,
+        rotate_prob=args.rotate_prob,
+        snapshot_dirs=args.snapshot_dirs,
+        fail_log=args.fail_log,
+        save_fail_images=args.save_fail_images,
         model=args.model,
         model_kwargs=model_kwargs,
     )
-
-    if args.snapshot_dirs:
-        snap_parts = []
-        for p in args.snapshot_dirs:
-            dsd = load_from_disk(p)
-            if args.split not in dsd:
-                raise SystemExit(f"Split '{args.split}' not found in snapshot: {p}")
-            snap_parts.append(dsd[args.split])
-        if len(snap_parts) == 1:
-            hf_obj = snap_parts[0]
-        else:
-            hf_obj = concatenate_datasets(snap_parts)
-        streaming_flag = False
-    else:
-        hf_obj = load_hf_dataset(
-            args.dataset,
-            split=args.split,
-            config=args.config,
-            streaming=args.streaming,
-        )
-        streaming_flag = args.streaming
-    ds = build_rotdet_dataset(
-        hf_obj,
-        streaming=streaming_flag,
-        rotate_prob=args.rotate_prob,
-        pages_per_doc=args.pages_per_doc,
-        max_samples=(args.max_samples if args.max_samples > 0 else None),
-        out_size=out_size,
-    )
-    loader = build_rotdet_loader(
-        ds, batch_size=args.batch_size, num_workers=args.num_workers, device=device, streaming=streaming_flag
-    )
-
-    acc, cm = evaluate(model, loader, device, args.fail_log, args.save_fail_images)
-    print(f"\nSamples: {len(ds) if hasattr(ds, '__len__') else 'streamed'}")
-    print(f"Accuracy: {acc:.4f}")
+    print(f"\nSamples: {result['samples']}")
+    print(f"Accuracy: {result['accuracy']:.4f}")
     print("Confusion matrix (rows=true, cols=pred) [Normal, Rotated]:")
-    print(cm)
+    print(np.array(result["confusion_matrix"], dtype=int))
 
 if __name__ == "__main__":
     main()
