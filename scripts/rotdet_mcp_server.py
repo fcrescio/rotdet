@@ -1,4 +1,6 @@
 import asyncio
+import importlib
+import inspect
 import json
 
 from mcp.server import Server
@@ -9,6 +11,7 @@ from evaluate_rotdet import run_evaluation
 from models import available_model_names
 
 SERVER_NAME = "rotdet-eval"
+SERVER_VERSION = "0.1.0"
 
 
 def _build_args(arguments):
@@ -85,7 +88,41 @@ async def call_tool(name, arguments):
 
 async def _run_server():
     async with stdio_server() as (read_stream, write_stream):
-        await server.run(read_stream, write_stream)
+        run_params = inspect.signature(server.run).parameters
+        if "initialization_options" in run_params:
+            await server.run(
+                read_stream,
+                write_stream,
+                _build_initialization_options(),
+            )
+        else:
+            await server.run(read_stream, write_stream)
+
+
+def _build_initialization_options():
+    if hasattr(server, "create_initialization_options"):
+        return server.create_initialization_options()
+
+    initialization_options = _load_initialization_options_class()
+    options_payload = {
+        "server_name": SERVER_NAME,
+        "server_version": SERVER_VERSION,
+        "capabilities": server.get_capabilities(),
+    }
+    if initialization_options is None:
+        return options_payload
+    return initialization_options(**options_payload)
+
+
+def _load_initialization_options_class():
+    for module_path in ("mcp.server.models", "mcp.server"):
+        if importlib.util.find_spec(module_path) is None:
+            continue
+        module = importlib.import_module(module_path)
+        initialization_options = getattr(module, "InitializationOptions", None)
+        if initialization_options is not None:
+            return initialization_options
+    return None
 
 
 def main():
