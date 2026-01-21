@@ -83,10 +83,14 @@ async def call_tool(name, arguments):
     return [TextContent(type="text", text=payload)]
 
 
-async def main():
+async def _run_server():
     async with stdio_server() as (read_stream, write_stream):
         await server.run(read_stream, write_stream)
 
 
+def main():
+    asyncio.run(_run_server())
+
+
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
