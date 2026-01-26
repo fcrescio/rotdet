@@ -176,7 +176,10 @@ def main():
     ap.add_argument(
         "--model-kwargs",
         default=None,
-        help="Optional JSON string with keyword arguments to override model defaults.",
+        help=(
+            "Optional JSON string with keyword arguments to override model defaults. "
+            "JSON arrays are coerced to tuples when the model default expects a tuple."
+        ),
     )
     args = ap.parse_args()
 
