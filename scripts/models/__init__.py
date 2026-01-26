@@ -61,6 +61,18 @@ def default_model_kwargs(name: str) -> Dict[str, Any]:
     return dict(_MODEL_REGISTRY[name][1])
 
 
+def _coerce_tuple_overrides(
+    defaults: Dict[str, Any], params: Dict[str, Any]
+) -> Dict[str, Any]:
+    """Coerce list overrides into tuples when defaults declare tuple values."""
+
+    coerced = dict(params)
+    for key, default_value in defaults.items():
+        if isinstance(default_value, tuple) and isinstance(coerced.get(key), list):
+            coerced[key] = tuple(coerced[key])
+    return coerced
+
+
 def create_model(name: str, **overrides: Any) -> RotDetModel:
     """Instantiate a registered model, applying optional overrides."""
 
@@ -68,6 +80,7 @@ def create_model(name: str, **overrides: Any) -> RotDetModel:
         raise KeyError(f"Unknown model '{name}'")
     factory, defaults = _MODEL_REGISTRY[name]
     params = {**defaults, **overrides}
+    params = _coerce_tuple_overrides(defaults, params)
     return factory(**params)
 
 
