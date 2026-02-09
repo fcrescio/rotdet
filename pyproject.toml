@@ -43,6 +43,7 @@ rotdet-mcp = "rotdet_mcp_server:main"
 
 [tool.setuptools]
 py-modules = [
+    "cli_utils",
     "rotdet_model",
     "rotdet_data",
     "rotdet_hf",
