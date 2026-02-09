@@ -9,6 +9,7 @@ from datasets import concatenate_datasets, load_from_disk
 
 from models import available_model_names
 from rotdet_model import load_rotdet
+from cli_utils import parse_model_kwargs
 from rotdet_data import build_rotdet_dataset, build_rotdet_loader
 from rotdet_hf import load_hf_dataset
 
@@ -181,17 +182,25 @@ def main():
             "JSON arrays are coerced to tuples when the model default expects a tuple."
         ),
     )
+    ap.add_argument(
+        "--model-kwarg",
+        action="append",
+        dest="model_kwargs_pairs",
+        default=None,
+        help="Bash-friendly model override in key=value form. May be repeated.",
+    )
+    ap.add_argument(
+        "--model-kwargs-file",
+        default=None,
+        help="Path to a JSON file with model kwargs overrides.",
+    )
     args = ap.parse_args()
 
-    model_kwargs = None
-    if args.model_kwargs:
-        try:
-            parsed = json.loads(args.model_kwargs)
-        except json.JSONDecodeError as exc:
-            raise SystemExit(f"Invalid JSON for --model-kwargs: {exc}") from exc
-        if not isinstance(parsed, dict):
-            raise SystemExit("--model-kwargs must decode to a JSON object")
-        model_kwargs = parsed
+    model_kwargs = parse_model_kwargs(
+        args.model_kwargs,
+        args.model_kwargs_file,
+        args.model_kwargs_pairs,
+    )
 
     result = run_evaluation(
         repo_id=args.repo_id,

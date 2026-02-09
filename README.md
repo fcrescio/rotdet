@@ -129,6 +129,40 @@ uv run rotdet-eval \
 
 ---
 
+## 🔧 Model kwargs overrides (bash-friendly)
+
+`rotdet-train` and `rotdet-eval` accept three override formats (you can mix them):
+
+1. **Repeatable `key=value` pairs** (most bash-friendly):
+   ```bash
+   uv run rotdet-train \
+     --dataset nielsr/funsd \
+     --model c4net \
+     --model-kwarg stem_ch=24 \
+     --model-kwarg widths=[32,64,192] \
+     --model-kwarg head_type=orientation
+   ```
+   *Values are type-inferred: `true/false`, `null/none`, numbers, or JSON lists/objects. Anything else stays a string.*
+
+2. **JSON file** (no escaping):
+   ```bash
+   uv run rotdet-eval \
+     --repo_id checkpoints/docmatix_stream/best.safetensors \
+     --dataset HuggingFaceM4/Docmatix \
+     --model-kwargs-file configs/c4net_overrides.json
+   ```
+
+3. **Raw JSON string** (legacy, still supported):
+   ```bash
+   uv run rotdet-train \
+     --dataset nielsr/funsd \
+     --model-kwargs '{"stem_ch": 24, "widths": [32, 64, 192]}'
+   ```
+
+**Precedence (last wins):** `--model-kwargs-file` → `--model-kwargs` → `--model-kwarg`.
+
+---
+
 ## 🧩 Evaluation options
 
 ### Log failed samples (JSONL)
