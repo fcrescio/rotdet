@@ -1,291 +1,91 @@
-# 🌀 RotDet — Document Page Orientation Detection
+# RotDet v2
 
-RotDet is a lightweight PyTorch training and evaluation framework for detecting page orientation (“rotated vs. normal”) in scanned documents.
+Compact four-way document orientation detection with a C4-equivariant CNN.
+Two separately trained variants accept **256x256** or **384x384** grayscale
+inputs. Both checkpoints are approximately **1.56 MB**; 256 is the default
+cost-oriented choice, while 384 performed better on development validation.
 
-It re-implements and extends the [fcrescio/rotdet](https://huggingface.co/fcrescio/rotdet) model from Hugging Face Hub, supporting both **map-style** and **streaming** datasets (e.g. [HuggingFaceM4/Docmatix](https://huggingface.co/datasets/HuggingFaceM4/Docmatix)).
+The implementation is corrected C4Net, not the experimental C4NetV2 class.
+This is a GitHub release candidate; Hub publication is tracked in
+[version identities](docs/VERSIONS.md). The old binary SimpleCNN remains
+available under the `v1.0` tag and the unchanged
+[v1 Hub repository](https://huggingface.co/fcrescio/rotdet).
 
----
+## Install and run
 
-## ✨ Features
-
-* ✅ Training and evaluation of rotation detector CNNs
-* ✅ Works with Hugging Face datasets (map-style or streaming)
-* ✅ Handles multi-page documents (`images` key in Docmatix)
-* ✅ Auto-splitting into train/validation sets
-* ✅ Checkpointing (`last.safetensors`, `best.safetensors`)
-* ✅ Resume or fine-tune from pretrained weights
-* ✅ Automatic config selection (`images`, `pdf`, `zero-shot-exp`, etc.)
-* ✅ Evaluation with fail logging (JSONL + failed image export)
-* ✅ Modular design: reusable data, model, and script modules
-
----
-
-## 🧱 Project structure
-
-```
-rotdet/
-├── scripts/       
-├── rotdet_data.py       # Dataset wrappers + loaders
-├── rotdet_model.py      # SimpleCNN + weight loading utilities
-├── rotdet_hf.py         # Hugging Face config + dataset loader helpers
-├── train_rotdet.py      # Training entry point
-├── evaluate_rotdet.py   # Evaluation entry point
-└── pyproject.toml       # Build & CLI definitions
-```
-
-When installed, the following console commands are available:
-
-* `rotdet-train` → train or fine-tune a model
-* `rotdet-eval` → evaluate a model checkpoint
-
----
-
-## ⚙️ Installation
-
-Requires **Python ≥3.9** and **PyTorch ≥2.0**.
-
-### Using [uv](https://docs.astral.sh/uv/)
+Python 3.11 or newer. For a CPU-only PyTorch installation:
 
 ```bash
-uv pip install -e .
+python -m venv .venv
+source .venv/bin/activate
+pip install torch --index-url https://download.pytorch.org/whl/cpu
+pip install .
+rotdet --model /path/to/256 --threads 4 page.png
 ```
 
-or with pip:
+The variant directory must contain `model.safetensors` and `config.json`.
+Weights are not committed to Git. The loader verifies the SHA-256 before
+loading and uses the exact architecture and resolution in the configuration.
+
+```python
+from pathlib import Path
+from rotdet import Detector
+
+detector = Detector("/path/to/256")
+result = detector.predict(Path("page.png").read_bytes())
+print(result["correction_cw_degrees"])
+```
+
+After Hub publication, install `.[hub]` and use
+`Detector.from_pretrained(256, revision="<published-commit-sha>")`.
+An explicit revision is required for reproducible artifact selection.
+
+## Output contract
+
+| Class | Observed orientation | Clockwise correction |
+|---|---|---|
+| 0 | Upright | 0 degrees |
+| 1 | 90 degrees counterclockwise | 90 degrees |
+| 2 | 180 degrees | 180 degrees |
+| 3 | 270 degrees counterclockwise | 270 degrees |
+
+The API returns the class, orientation, correction, softmax confidence and
+four probabilities. Confidence is **not calibrated**; no automatic abstention
+threshold is provided. The detector never modifies or rotates input files.
+It handles images, not PDF decoding or fine-angle deskewing.
+
+## Evidence and limitations
+
+On 164 provisionally LLM-labeled independent pages, accuracy was 90.85%
+(256), 89.63% (384), and 93.90% (Paddle PP-LCNet_x1_0_doc_ori). Measured
+CPU batch1 medians were 29.4, 49.0 and 74.2 ms respectively. **These are
+not human-gold accuracy estimates or universal performance guarantees.**
+Paired uncertainty does not establish superiority or equivalence.
+
+See [benchmark details](docs/BENCHMARK.md),
+[training provenance and recipe](docs/DATA_PROVENANCE.md), and
+[Archive.org source references](docs/training_sources.json).
+Datasets are deliberately not redistributed. Source licenses were not
+specified; source citations do not grant reuse permission.
+
+## Development
 
 ```bash
-pip install -e .
+pip install '.[test]'
+python -m pytest tests
 ```
 
----
-
-## 🚀 Quick Start
-
-### 1️⃣ Evaluate the pretrained model
-
-```bash
-uv run rotdet-eval \
-  --repo_id fcrescio/rotdet \
-  --filename model.safetensors \
-  --dataset nielsr/funsd \
-  --split test
-```
-
----
-
-### 2️⃣ Train on a Hugging Face dataset
-
-#### Map-style example (FUNSD)
-
-```bash
-uv run rotdet-train \
-  --dataset nielsr/funsd \
-  --split train \
-  --val-fraction 0.2 \
-  --epochs 3 --batch-size 64 \
-  --output-dir checkpoints/funsd
-```
-
-#### Streaming example (Docmatix)
-
-```bash
-uv run rotdet-train \
-  --dataset HuggingFaceM4/Docmatix \
-  --config images \
-  --streaming \
-  --pages-per-doc 3 \
-  --val-pages 4000 \
-  --max-train-pages 20000 \
-  --epochs 2 --batch-size 64 \
-  --output-dir checkpoints/docmatix_stream
-```
-
----
-
-### 3️⃣ Resume training or fine-tune
-
-```bash
-uv run rotdet-train \
-  --resume checkpoints/docmatix_stream/best.safetensors \
-  --dataset HuggingFaceM4/Docmatix --config images --streaming \
-  --epochs 2
-```
-
----
-
-### 4️⃣ Evaluate a local checkpoint
-
-```bash
-uv run rotdet-eval \
-  --repo_id checkpoints/docmatix_stream/best.safetensors \
-  --dataset HuggingFaceM4/Docmatix \
-  --config images --streaming \
-  --max_samples 2000
-```
-
----
-
-## 🧩 Evaluation options
-
-### Log failed samples (JSONL)
-
-```bash
-uv run rotdet-eval \
-  --repo_id checkpoints/funsd/best.safetensors \
-  --dataset nielsr/funsd --split test \
-  --fail-log failures.jsonl
-```
-
-Each line looks like:
-
-```json
-{"true":1,"pred":0,"meta":{"row_idx":12,"page_idx":3,"id":"doc123","image_path":"..."}}
-```
-
----
-
-### Save failed images for visual debugging
-
-```bash
-uv run rotdet-eval \
-  --repo_id checkpoints/funsd/best.safetensors \
-  --dataset HuggingFaceM4/Docmatix --config images \
-  --fail-log failures.jsonl \
-  --save-fail-images debug_fails/
-```
-
-This writes a `.jsonl` log plus the actual failed page images into `debug_fails/`.
-
----
-
-## 🧠 Dataset support
-
-RotDet works with any Hugging Face dataset that provides images via:
-
-* `image` → single page per row (e.g. FUNSD)
-* `images` → list of pages per document (e.g. Docmatix)
-* `image_path` or `url` → path/URL to image
-
-For Docmatix, the `config` is handled automatically:
-
-```bash
-# Automatically picks the best available config (usually 'images')
-uv run rotdet-train --dataset HuggingFaceM4/Docmatix
-```
-
-or explicitly:
-
-```bash
-uv run rotdet-train --dataset HuggingFaceM4/Docmatix --config zero-shot-exp
-```
-
-### 📥 Mining Reader Service scans locally
-
-Need a lightweight document dataset without relying on an existing Hugging Face repo? Use the new helper script to mine the
-[`readerservice`](https://archive.org/details/readerservice) collection from Internet Archive and export it as a Hugging Face
-`DatasetDict`:
-
-```bash
-python scripts/readerservice_miner.py \
-  --output-dir data/readerservice \
-  --val-fraction 0.1 \
-  --max-images 2000
-```
-
-The script downloads the images, writes them under `data/readerservice/images/`, materializes a HF-compliant dataset via
-`datasets.save_to_disk`, and produces a `manifest.json` with provenance info so you can train with
-`load_from_disk("data/readerservice/hf_dataset")` directly.
-
----
-
-## 🧪 Experiment management
-
-Each training run writes its own timestamped folder with:
-
-* `last.safetensors` — weights after the final epoch
-* `best.safetensors` — best validation accuracy
-* `training_summary.json` — per-epoch metrics
-* `hparams.json` — full training configuration
-
-Example:
-
-```bash
-checkpoints/docmatix_stream/
-├── best.safetensors
-├── last.safetensors
-├── hparams.json
-└── training_summary.json
-```
-
----
-
-## 📊 Example training summary
-
-```json
-{
-  "epochs": [
-    {"epoch":1,"train_loss":0.2413,"val_acc":0.974,"time_s":42.1},
-    {"epoch":2,"train_loss":0.1384,"val_acc":0.982,"time_s":41.8}
-  ],
-  "best": {"val_acc":0.982}
-}
-```
-
----
-
-## 🧱 Model architecture
-
-The default `SimpleCNN` is a small three-layer convolutional classifier:
-
-```
-Input:  (1, 128, 128)
-↓ Conv2d(1→16) + ReLU + MaxPool2d
-↓ Conv2d(16→32) + ReLU + MaxPool2d
-↓ Conv2d(32→32) + ReLU + MaxPool2d
-↓ Flatten → Linear(8192→32) → ReLU → Linear(32→2)
-Output: logits for [Normal, Rotated]
-```
-
-You can replace or extend it in `rotdet_model.py`.
-
----
-
-## 🧰 Development
-
-Typical workflow:
-
-```bash
-uv run rotdet-train   # train new model
-uv run rotdet-eval    # evaluate checkpoint
-uv run pytest         # (optional) run tests
-```
-
----
-
-## 💡 Experiment tips
-
-* Use `--output-dir` per experiment (each run auto-timestamps).
-* Enable `--save-every-epoch` for detailed logs.
-* Add `--from-pretrained` to start from Hugging Face weights.
-* Use Optuna or Hydra for hyperparameter sweeps (supported by design).
-* Add `--fail-log` during evaluation to detect dataset issues.
-
----
-
-## 📄 License
-
-MIT License © 2025 — RotDet contributors
-Based on the pretrained model [fcrescio/rotdet](https://huggingface.co/fcrescio/rotdet).
-
----
-
-## 🔗 References
-
-* [fcrescio/rotdet](https://huggingface.co/fcrescio/rotdet) — Original model
-* [HuggingFaceM4/Docmatix](https://huggingface.co/datasets/HuggingFaceM4/Docmatix) — Document dataset
-* [Hugging Face Datasets](https://huggingface.co/docs/datasets)
-* [PyTorch DataLoader](https://pytorch.org/docs/stable/data.html)
-
----
-
-✅ **Summary**:
-This README documents installation, training, evaluation, dataset support, fail-logging, and experiment organization — everything needed to train or analyze document rotation detection models with your RotDet project.
+Tests cover quarter-turn equivariance, orientation-channel layout,
+preprocessing, strict checkpoint loading and corruption rejection at both
+resolutions. Public checkpoint parity is additionally verified against the
+frozen lab candidates; verification does not retrain or rescore the benchmark.
+
+Legacy evaluation/training scripts remain under `scripts/`, with their
+[original documentation](docs/LEGACY_README.md). They are not the v2 training
+entrypoint. Install `.[legacy]` only when working on those historical tools.
+
+## License
+
+Code: MIT, as already declared by this project. Source documents are not
+covered by that license. Weight licensing will be stated separately in the
+Hub model card when the artifacts are published.

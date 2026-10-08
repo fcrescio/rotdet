@@ -1,0 +1,1633 @@
+{
+  "source": "Internet Archive",
+  "dataset_redistributed": false,
+  "license_status": "No explicit license identified; citations do not grant reuse permission.",
+  "training_pages": 4439,
+  "training_documents": 406,
+  "sources": [
+    {
+      "identifier": "1977-imsai-complete-control",
+      "url": "https://archive.org/details/1977-imsai-complete-control"
+    },
+    {
+      "identifier": "1977-proctech-sol",
+      "url": "https://archive.org/details/1977-proctech-sol"
+    },
+    {
+      "identifier": "1977-tdl-xitan-alpha",
+      "url": "https://archive.org/details/1977-tdl-xitan-alpha"
+    },
+    {
+      "identifier": "1978-06-apple-bestselling",
+      "url": "https://archive.org/details/1978-06-apple-bestselling"
+    },
+    {
+      "identifier": "1978-processortech-seven",
+      "url": "https://archive.org/details/1978-processortech-seven"
+    },
+    {
+      "identifier": "1978-radioshack-believer",
+      "url": "https://archive.org/details/1978-radioshack-believer"
+    },
+    {
+      "identifier": "1979-bell-ess",
+      "url": "https://archive.org/details/1979-bell-ess"
+    },
+    {
+      "identifier": "1980-apple-franklin",
+      "url": "https://archive.org/details/1980-apple-franklin"
+    },
+    {
+      "identifier": "1980-heathkit-h89",
+      "url": "https://archive.org/details/1980-heathkit-h89"
+    },
+    {
+      "identifier": "1980-honeybox-cmnisonic-imager",
+      "url": "https://archive.org/details/1980-honeybox-cmnisonic-imager"
+    },
+    {
+      "identifier": "1980-varityper-brochure",
+      "url": "https://archive.org/details/1980-varityper-brochure"
+    },
+    {
+      "identifier": "1981-05-eexchange",
+      "url": "https://archive.org/details/1981-05-eexchange"
+    },
+    {
+      "identifier": "1981-06-chicatrugnews",
+      "url": "https://archive.org/details/1981-06-chicatrugnews"
+    },
+    {
+      "identifier": "1981-microsoft-adventure",
+      "url": "https://archive.org/details/1981-microsoft-adventure"
+    },
+    {
+      "identifier": "1982-ibm-education",
+      "url": "https://archive.org/details/1982-ibm-education"
+    },
+    {
+      "identifier": "1982-ibm-personal-computer",
+      "url": "https://archive.org/details/1982-ibm-personal-computer"
+    },
+    {
+      "identifier": "1982-imagic-gameads",
+      "url": "https://archive.org/details/1982-imagic-gameads"
+    },
+    {
+      "identifier": "1982-royalsoftware",
+      "url": "https://archive.org/details/1982-royalsoftware"
+    },
+    {
+      "identifier": "1982-sfinks-pc",
+      "url": "https://archive.org/details/1982-sfinks-pc"
+    },
+    {
+      "identifier": "1982-sirius-freefall",
+      "url": "https://archive.org/details/1982-sirius-freefall"
+    },
+    {
+      "identifier": "1983-12-activision-shuttle",
+      "url": "https://archive.org/details/1983-12-activision-shuttle"
+    },
+    {
+      "identifier": "1983-12-atari-poleposition",
+      "url": "https://archive.org/details/1983-12-atari-poleposition"
+    },
+    {
+      "identifier": "1983-12-atari2600-eg",
+      "url": "https://archive.org/details/1983-12-atari2600-eg"
+    },
+    {
+      "identifier": "1983-12-bigfive-miner5200",
+      "url": "https://archive.org/details/1983-12-bigfive-miner5200"
+    },
+    {
+      "identifier": "1983-12-cbs-mking",
+      "url": "https://archive.org/details/1983-12-cbs-mking"
+    },
+    {
+      "identifier": "1983-12-coleco-adam-eg",
+      "url": "https://archive.org/details/1983-12-coleco-adam-eg"
+    },
+    {
+      "identifier": "1983-12-epyx",
+      "url": "https://archive.org/details/1983-12-epyx"
+    },
+    {
+      "identifier": "1983-12-mattel-masters",
+      "url": "https://archive.org/details/1983-12-mattel-masters"
+    },
+    {
+      "identifier": "1983-12-mrcool-sierra",
+      "url": "https://archive.org/details/1983-12-mrcool-sierra"
+    },
+    {
+      "identifier": "1983-12-muse-blackjack",
+      "url": "https://archive.org/details/1983-12-muse-blackjack"
+    },
+    {
+      "identifier": "1983-12-odyssey-probe2000",
+      "url": "https://archive.org/details/1983-12-odyssey-probe2000"
+    },
+    {
+      "identifier": "1983-12-paxxon-watches",
+      "url": "https://archive.org/details/1983-12-paxxon-watches"
+    },
+    {
+      "identifier": "1983-12-penguin-generation",
+      "url": "https://archive.org/details/1983-12-penguin-generation"
+    },
+    {
+      "identifier": "1983-12-pointmaster-joystick",
+      "url": "https://archive.org/details/1983-12-pointmaster-joystick"
+    },
+    {
+      "identifier": "1983-12-screenplay-asylum",
+      "url": "https://archive.org/details/1983-12-screenplay-asylum"
+    },
+    {
+      "identifier": "1983-12-sega-buckrogers",
+      "url": "https://archive.org/details/1983-12-sega-buckrogers"
+    },
+    {
+      "identifier": "1983-12-sega-congobongo",
+      "url": "https://archive.org/details/1983-12-sega-congobongo"
+    },
+    {
+      "identifier": "1983-12-sierra-creepycorridors",
+      "url": "https://archive.org/details/1983-12-sierra-creepycorridors"
+    },
+    {
+      "identifier": "1983-12-stickstation",
+      "url": "https://archive.org/details/1983-12-stickstation"
+    },
+    {
+      "identifier": "1983-12-wico-commandcontrol",
+      "url": "https://archive.org/details/1983-12-wico-commandcontrol"
+    },
+    {
+      "identifier": "1983-12-xonox-eg",
+      "url": "https://archive.org/details/1983-12-xonox-eg"
+    },
+    {
+      "identifier": "1983-20th-century-plastics",
+      "url": "https://archive.org/details/1983-20th-century-plastics"
+    },
+    {
+      "identifier": "1983-ai-catalog",
+      "url": "https://archive.org/details/1983-ai-catalog"
+    },
+    {
+      "identifier": "1983-alien-group-voicebox",
+      "url": "https://archive.org/details/1983-alien-group-voicebox"
+    },
+    {
+      "identifier": "1983-alloy-computer-products",
+      "url": "https://archive.org/details/1983-alloy-computer-products"
+    },
+    {
+      "identifier": "1983-apstek-brochure",
+      "url": "https://archive.org/details/1983-apstek-brochure"
+    },
+    {
+      "identifier": "1983-aspen-ribbons",
+      "url": "https://archive.org/details/1983-aspen-ribbons"
+    },
+    {
+      "identifier": "1983-atari-connection",
+      "url": "https://archive.org/details/1983-atari-connection"
+    },
+    {
+      "identifier": "1983-atari-nextgeneration-catalog",
+      "url": "https://archive.org/details/1983-atari-nextgeneration-catalog"
+    },
+    {
+      "identifier": "1983-basf-selection",
+      "url": "https://archive.org/details/1983-basf-selection"
+    },
+    {
+      "identifier": "1983-broderbund-brochure",
+      "url": "https://archive.org/details/1983-broderbund-brochure"
+    },
+    {
+      "identifier": "1983-cm-catalog",
+      "url": "https://archive.org/details/1983-cm-catalog"
+    },
+    {
+      "identifier": "1983-columbia-eval",
+      "url": "https://archive.org/details/1983-columbia-eval"
+    },
+    {
+      "identifier": "1983-compucart",
+      "url": "https://archive.org/details/1983-compucart"
+    },
+    {
+      "identifier": "1983-computermat-catalog",
+      "url": "https://archive.org/details/1983-computermat-catalog"
+    },
+    {
+      "identifier": "1983-elephant-trunk",
+      "url": "https://archive.org/details/1983-elephant-trunk"
+    },
+    {
+      "identifier": "1983-epd-catalog",
+      "url": "https://archive.org/details/1983-epd-catalog"
+    },
+    {
+      "identifier": "1983-epson-computer",
+      "url": "https://archive.org/details/1983-epson-computer"
+    },
+    {
+      "identifier": "1983-epyx-catalog",
+      "url": "https://archive.org/details/1983-epyx-catalog"
+    },
+    {
+      "identifier": "1983-finetech-woodbury",
+      "url": "https://archive.org/details/1983-finetech-woodbury"
+    },
+    {
+      "identifier": "1983-maxell-catalog",
+      "url": "https://archive.org/details/1983-maxell-catalog"
+    },
+    {
+      "identifier": "1983-microdesign-insider",
+      "url": "https://archive.org/details/1983-microdesign-insider"
+    },
+    {
+      "identifier": "1983-microfun-ming",
+      "url": "https://archive.org/details/1983-microfun-ming"
+    },
+    {
+      "identifier": "1983-micromatch-catalog",
+      "url": "https://archive.org/details/1983-micromatch-catalog"
+    },
+    {
+      "identifier": "1983-mylex-chairman",
+      "url": "https://archive.org/details/1983-mylex-chairman"
+    },
+    {
+      "identifier": "1983-orangeplus",
+      "url": "https://archive.org/details/1983-orangeplus"
+    },
+    {
+      "identifier": "1983-pcdisk-softwaresubmission",
+      "url": "https://archive.org/details/1983-pcdisk-softwaresubmission"
+    },
+    {
+      "identifier": "1983-pegasus-peripherals",
+      "url": "https://archive.org/details/1983-pegasus-peripherals"
+    },
+    {
+      "identifier": "1983-philatelic-management-system",
+      "url": "https://archive.org/details/1983-philatelic-management-system"
+    },
+    {
+      "identifier": "1983-precision-superbase",
+      "url": "https://archive.org/details/1983-precision-superbase"
+    },
+    {
+      "identifier": "1983-santaclara-pcterminal",
+      "url": "https://archive.org/details/1983-santaclara-pcterminal"
+    },
+    {
+      "identifier": "1983-seasoned-keyboard",
+      "url": "https://archive.org/details/1983-seasoned-keyboard"
+    },
+    {
+      "identifier": "1983-shelburne-catalog",
+      "url": "https://archive.org/details/1983-shelburne-catalog"
+    },
+    {
+      "identifier": "1983-softraders-international",
+      "url": "https://archive.org/details/1983-softraders-international"
+    },
+    {
+      "identifier": "1983-stb-products-catalog",
+      "url": "https://archive.org/details/1983-stb-products-catalog"
+    },
+    {
+      "identifier": "1983-sweetgum-catalog",
+      "url": "https://archive.org/details/1983-sweetgum-catalog"
+    },
+    {
+      "identifier": "1983-xentek-magicmother",
+      "url": "https://archive.org/details/1983-xentek-magicmother"
+    },
+    {
+      "identifier": "1984-Fall-DAK-Catalog",
+      "url": "https://archive.org/details/1984-Fall-DAK-Catalog"
+    },
+    {
+      "identifier": "1984-abc-airflow",
+      "url": "https://archive.org/details/1984-abc-airflow"
+    },
+    {
+      "identifier": "1984-atari-alda",
+      "url": "https://archive.org/details/1984-atari-alda"
+    },
+    {
+      "identifier": "1984-atari-tactical-error",
+      "url": "https://archive.org/details/1984-atari-tactical-error"
+    },
+    {
+      "identifier": "1984-bounty-bob",
+      "url": "https://archive.org/details/1984-bounty-bob"
+    },
+    {
+      "identifier": "1984-citibank-homebank",
+      "url": "https://archive.org/details/1984-citibank-homebank"
+    },
+    {
+      "identifier": "1984-columbia-vp-portable",
+      "url": "https://archive.org/details/1984-columbia-vp-portable"
+    },
+    {
+      "identifier": "1984-computer-software-services",
+      "url": "https://archive.org/details/1984-computer-software-services"
+    },
+    {
+      "identifier": "1984-computerpalace",
+      "url": "https://archive.org/details/1984-computerpalace"
+    },
+    {
+      "identifier": "1984-computerpalace-catalog",
+      "url": "https://archive.org/details/1984-computerpalace-catalog"
+    },
+    {
+      "identifier": "1984-fds-2mb-floppies",
+      "url": "https://archive.org/details/1984-fds-2mb-floppies"
+    },
+    {
+      "identifier": "1984-interfaceinc-catalog",
+      "url": "https://archive.org/details/1984-interfaceinc-catalog"
+    },
+    {
+      "identifier": "1984-microfun-carthain",
+      "url": "https://archive.org/details/1984-microfun-carthain"
+    },
+    {
+      "identifier": "1984-microware-innovations",
+      "url": "https://archive.org/details/1984-microware-innovations"
+    },
+    {
+      "identifier": "1984-microware-products",
+      "url": "https://archive.org/details/1984-microware-products"
+    },
+    {
+      "identifier": "1984-oldacres",
+      "url": "https://archive.org/details/1984-oldacres"
+    },
+    {
+      "identifier": "1984-omicron-catalog",
+      "url": "https://archive.org/details/1984-omicron-catalog"
+    },
+    {
+      "identifier": "1984-oss-precision-tools",
+      "url": "https://archive.org/details/1984-oss-precision-tools"
+    },
+    {
+      "identifier": "1984-quadram-quips",
+      "url": "https://archive.org/details/1984-quadram-quips"
+    },
+    {
+      "identifier": "1984-santaclara-pcnet",
+      "url": "https://archive.org/details/1984-santaclara-pcnet"
+    },
+    {
+      "identifier": "1984-ssi-catalog",
+      "url": "https://archive.org/details/1984-ssi-catalog"
+    },
+    {
+      "identifier": "1984-starsprite-avantgarde",
+      "url": "https://archive.org/details/1984-starsprite-avantgarde"
+    },
+    {
+      "identifier": "1984-talltree-jram2",
+      "url": "https://archive.org/details/1984-talltree-jram2"
+    },
+    {
+      "identifier": "1985-atari-america",
+      "url": "https://archive.org/details/1985-atari-america"
+    },
+    {
+      "identifier": "1986-amiga-create",
+      "url": "https://archive.org/details/1986-amiga-create"
+    },
+    {
+      "identifier": "1988-Winter-DAK-Catalog",
+      "url": "https://archive.org/details/1988-Winter-DAK-Catalog"
+    },
+    {
+      "identifier": "1988-compuserve-higher-intelligence",
+      "url": "https://archive.org/details/1988-compuserve-higher-intelligence"
+    },
+    {
+      "identifier": "1988-dak-astounding-writing",
+      "url": "https://archive.org/details/1988-dak-astounding-writing"
+    },
+    {
+      "identifier": "1988-nri-repair-every-computer",
+      "url": "https://archive.org/details/1988-nri-repair-every-computer"
+    },
+    {
+      "identifier": "1989-sirtech-wizardryhilt",
+      "url": "https://archive.org/details/1989-sirtech-wizardryhilt"
+    },
+    {
+      "identifier": "198x-proft-addramplus",
+      "url": "https://archive.org/details/198x-proft-addramplus"
+    },
+    {
+      "identifier": "1990-nynex-isdn",
+      "url": "https://archive.org/details/1990-nynex-isdn"
+    },
+    {
+      "identifier": "1992-04-appliedengineering-vulcangold",
+      "url": "https://archive.org/details/1992-04-appliedengineering-vulcangold"
+    },
+    {
+      "identifier": "1992-04-qualitycomputers-software",
+      "url": "https://archive.org/details/1992-04-qualitycomputers-software"
+    },
+    {
+      "identifier": "1992-04-softdisk-softdiskgs",
+      "url": "https://archive.org/details/1992-04-softdisk-softdiskgs"
+    },
+    {
+      "identifier": "1992-04-ziptechnology-zipgs",
+      "url": "https://archive.org/details/1992-04-ziptechnology-zipgs"
+    },
+    {
+      "identifier": "20th_Century_Plastics",
+      "url": "https://archive.org/details/20th_Century_Plastics"
+    },
+    {
+      "identifier": "3Design_Questions_and_Answers",
+      "url": "https://archive.org/details/3Design_Questions_and_Answers"
+    },
+    {
+      "identifier": "80-grafix-19xx",
+      "url": "https://archive.org/details/80-grafix-19xx"
+    },
+    {
+      "identifier": "Adventure_Internation_Order_Form",
+      "url": "https://archive.org/details/Adventure_Internation_Order_Form"
+    },
+    {
+      "identifier": "Adventure_International_Software_Submission",
+      "url": "https://archive.org/details/Adventure_International_Software_Submission"
+    },
+    {
+      "identifier": "Air_Track_Control_Concepts",
+      "url": "https://archive.org/details/Air_Track_Control_Concepts"
+    },
+    {
+      "identifier": "Alpha_Software_Executive_Package",
+      "url": "https://archive.org/details/Alpha_Software_Executive_Package"
+    },
+    {
+      "identifier": "AppleIMacBrochure2000",
+      "url": "https://archive.org/details/AppleIMacBrochure2000"
+    },
+    {
+      "identifier": "AppleIPodHelloBrochure2001",
+      "url": "https://archive.org/details/AppleIPodHelloBrochure2001"
+    },
+    {
+      "identifier": "ApplePowerBookG412InchBrochure2003",
+      "url": "https://archive.org/details/ApplePowerBookG412InchBrochure2003"
+    },
+    {
+      "identifier": "ApplePowerBookG4Brochure2005",
+      "url": "https://archive.org/details/ApplePowerBookG4Brochure2005"
+    },
+    {
+      "identifier": "ApplePowerMacG4Brochure2002",
+      "url": "https://archive.org/details/ApplePowerMacG4Brochure2002"
+    },
+    {
+      "identifier": "ApplePowerMacG4Brochure2003",
+      "url": "https://archive.org/details/ApplePowerMacG4Brochure2003"
+    },
+    {
+      "identifier": "AppleiMacRebirthBrochure",
+      "url": "https://archive.org/details/AppleiMacRebirthBrochure"
+    },
+    {
+      "identifier": "Apropros_Technology_Catalog",
+      "url": "https://archive.org/details/Apropros_Technology_Catalog"
+    },
+    {
+      "identifier": "Artificial_Intelligence_Research_Group_Eliza_1983",
+      "url": "https://archive.org/details/Artificial_Intelligence_Research_Group_Eliza_1983"
+    },
+    {
+      "identifier": "Ashton_Tate_Friday_Brochure",
+      "url": "https://archive.org/details/Ashton_Tate_Friday_Brochure"
+    },
+    {
+      "identifier": "Aspen_Ribbons_Price_List",
+      "url": "https://archive.org/details/Aspen_Ribbons_Price_List"
+    },
+    {
+      "identifier": "Atari1040STEBrochure1990",
+      "url": "https://archive.org/details/Atari1040STEBrochure1990"
+    },
+    {
+      "identifier": "AtariFalcon030Brochure1992",
+      "url": "https://archive.org/details/AtariFalcon030Brochure1992"
+    },
+    {
+      "identifier": "AtariMEGASTEBrochure1990",
+      "url": "https://archive.org/details/AtariMEGASTEBrochure1990"
+    },
+    {
+      "identifier": "AtariPortfolioBrochure1990",
+      "url": "https://archive.org/details/AtariPortfolioBrochure1990"
+    },
+    {
+      "identifier": "AtariTT030Brochure1990",
+      "url": "https://archive.org/details/AtariTT030Brochure1990"
+    },
+    {
+      "identifier": "Atari_Computer_Camps_Magazine_Ads",
+      "url": "https://archive.org/details/Atari_Computer_Camps_Magazine_Ads"
+    },
+    {
+      "identifier": "Atron_System_Information",
+      "url": "https://archive.org/details/Atron_System_Information"
+    },
+    {
+      "identifier": "Atto_Soft_KB_400",
+      "url": "https://archive.org/details/Atto_Soft_KB_400"
+    },
+    {
+      "identifier": "AutoCAD_Information_Pack",
+      "url": "https://archive.org/details/AutoCAD_Information_Pack"
+    },
+    {
+      "identifier": "Avalon_Hill_Microcomputer_Games_Catalog_Spring_1984",
+      "url": "https://archive.org/details/Avalon_Hill_Microcomputer_Games_Catalog_Spring_1984"
+    },
+    {
+      "identifier": "Axiom_Direct-Connect_Printers_flyer",
+      "url": "https://archive.org/details/Axiom_Direct-Connect_Printers_flyer"
+    },
+    {
+      "identifier": "BAZ_Electronics_CRT_Electronics",
+      "url": "https://archive.org/details/BAZ_Electronics_CRT_Electronics"
+    },
+    {
+      "identifier": "Batchprint_Flyer",
+      "url": "https://archive.org/details/Batchprint_Flyer"
+    },
+    {
+      "identifier": "Bizcomp_IntelliModem_Letter",
+      "url": "https://archive.org/details/Bizcomp_IntelliModem_Letter"
+    },
+    {
+      "identifier": "Blaise_Computing_Inc_Products",
+      "url": "https://archive.org/details/Blaise_Computing_Inc_Products"
+    },
+    {
+      "identifier": "Broderbund_Two_New_Members",
+      "url": "https://archive.org/details/Broderbund_Two_New_Members"
+    },
+    {
+      "identifier": "CCI_References",
+      "url": "https://archive.org/details/CCI_References"
+    },
+    {
+      "identifier": "Chartmaster_001-FIND-OTHERS",
+      "url": "https://archive.org/details/Chartmaster_001-FIND-OTHERS"
+    },
+    {
+      "identifier": "Chartmaster_002-FIND-OTHERS",
+      "url": "https://archive.org/details/Chartmaster_002-FIND-OTHERS"
+    },
+    {
+      "identifier": "Checks_To_Go_Dealer_Registration_Form",
+      "url": "https://archive.org/details/Checks_To_Go_Dealer_Registration_Form"
+    },
+    {
+      "identifier": "Coherent_Williams",
+      "url": "https://archive.org/details/Coherent_Williams"
+    },
+    {
+      "identifier": "Compucable_Corporation_Covers",
+      "url": "https://archive.org/details/Compucable_Corporation_Covers"
+    },
+    {
+      "identifier": "Computer_Camps_International",
+      "url": "https://archive.org/details/Computer_Camps_International"
+    },
+    {
+      "identifier": "Conographic_Corporation_Cono_Color",
+      "url": "https://archive.org/details/Conographic_Corporation_Cono_Color"
+    },
+    {
+      "identifier": "Consolink_Corporation",
+      "url": "https://archive.org/details/Consolink_Corporation"
+    },
+    {
+      "identifier": "Context_Management_Systems_Order",
+      "url": "https://archive.org/details/Context_Management_Systems_Order"
+    },
+    {
+      "identifier": "Creative_Computing_Subscription_Letter",
+      "url": "https://archive.org/details/Creative_Computing_Subscription_Letter"
+    },
+    {
+      "identifier": "Crystal_Microsoft_Ordering",
+      "url": "https://archive.org/details/Crystal_Microsoft_Ordering"
+    },
+    {
+      "identifier": "DAK-catalog",
+      "url": "https://archive.org/details/DAK-catalog"
+    },
+    {
+      "identifier": "Data_Base_Manager_II_Alpha_Software",
+      "url": "https://archive.org/details/Data_Base_Manager_II_Alpha_Software"
+    },
+    {
+      "identifier": "Diskette_Junction_Price_List",
+      "url": "https://archive.org/details/Diskette_Junction_Price_List"
+    },
+    {
+      "identifier": "EA_Critics_Report",
+      "url": "https://archive.org/details/EA_Critics_Report"
+    },
+    {
+      "identifier": "Easy_Access_Margrace_Letter",
+      "url": "https://archive.org/details/Easy_Access_Margrace_Letter"
+    },
+    {
+      "identifier": "Enter_Magazine_Letter_Reservation_Form",
+      "url": "https://archive.org/details/Enter_Magazine_Letter_Reservation_Form"
+    },
+    {
+      "identifier": "Epson_Fx-100_Brochure",
+      "url": "https://archive.org/details/Epson_Fx-100_Brochure"
+    },
+    {
+      "identifier": "Epson_RX-80-FT",
+      "url": "https://archive.org/details/Epson_RX-80-FT"
+    },
+    {
+      "identifier": "Family_Computing",
+      "url": "https://archive.org/details/Family_Computing"
+    },
+    {
+      "identifier": "FlipTrack_Learning_Systems",
+      "url": "https://archive.org/details/FlipTrack_Learning_Systems"
+    },
+    {
+      "identifier": "Flippy_Discs",
+      "url": "https://archive.org/details/Flippy_Discs"
+    },
+    {
+      "identifier": "Format-II_Editor_Kensington_Microware_1983",
+      "url": "https://archive.org/details/Format-II_Editor_Kensington_Microware_1983"
+    },
+    {
+      "identifier": "Foundation_Pyramid_Pamphlet",
+      "url": "https://archive.org/details/Foundation_Pyramid_Pamphlet"
+    },
+    {
+      "identifier": "Freddy_Fish_Mirror_Images",
+      "url": "https://archive.org/details/Freddy_Fish_Mirror_Images"
+    },
+    {
+      "identifier": "Hayes_Announces_Hayes_ISDN_Extender_1992",
+      "url": "https://archive.org/details/Hayes_Announces_Hayes_ISDN_Extender_1992"
+    },
+    {
+      "identifier": "Hi-Fi_Exchange_catalog_1982-08",
+      "url": "https://archive.org/details/Hi-Fi_Exchange_catalog_1982-08"
+    },
+    {
+      "identifier": "High_Speed_Video",
+      "url": "https://archive.org/details/High_Speed_Video"
+    },
+    {
+      "identifier": "Home_Key_Products_Catalog",
+      "url": "https://archive.org/details/Home_Key_Products_Catalog"
+    },
+    {
+      "identifier": "Hytec_Systems_CD-1632",
+      "url": "https://archive.org/details/Hytec_Systems_CD-1632"
+    },
+    {
+      "identifier": "IBEX_Computer_Corporation_Quote_1984_01_06",
+      "url": "https://archive.org/details/IBEX_Computer_Corporation_Quote_1984_01_06"
+    },
+    {
+      "identifier": "Infocom_Order_Form",
+      "url": "https://archive.org/details/Infocom_Order_Form"
+    },
+    {
+      "identifier": "Infoworld_A84",
+      "url": "https://archive.org/details/Infoworld_A84"
+    },
+    {
+      "identifier": "Insoft_Accountant",
+      "url": "https://archive.org/details/Insoft_Accountant"
+    },
+    {
+      "identifier": "Intellegence_Quest_Software_Avalon_Hill",
+      "url": "https://archive.org/details/Intellegence_Quest_Software_Avalon_Hill"
+    },
+    {
+      "identifier": "Intra_Computer",
+      "url": "https://archive.org/details/Intra_Computer"
+    },
+    {
+      "identifier": "Jr_Magazine_Letter",
+      "url": "https://archive.org/details/Jr_Magazine_Letter"
+    },
+    {
+      "identifier": "LNW_Computers_Price_List_1983_11_15",
+      "url": "https://archive.org/details/LNW_Computers_Price_List_1983_11_15"
+    },
+    {
+      "identifier": "MA_Systems_Products_Letter",
+      "url": "https://archive.org/details/MA_Systems_Products_Letter"
+    },
+    {
+      "identifier": "MCI_Mail_Envelope",
+      "url": "https://archive.org/details/MCI_Mail_Envelope"
+    },
+    {
+      "identifier": "Micro_Computing_Mac",
+      "url": "https://archive.org/details/Micro_Computing_Mac"
+    },
+    {
+      "identifier": "Micro_Fun_Death_in_The_Carribean_Ad",
+      "url": "https://archive.org/details/Micro_Fun_Death_in_The_Carribean_Ad"
+    },
+    {
+      "identifier": "Micro_Match",
+      "url": "https://archive.org/details/Micro_Match"
+    },
+    {
+      "identifier": "Microlog_Flyer",
+      "url": "https://archive.org/details/Microlog_Flyer"
+    },
+    {
+      "identifier": "Microstuf_Catalog",
+      "url": "https://archive.org/details/Microstuf_Catalog"
+    },
+    {
+      "identifier": "Microstuf_Data_Communications",
+      "url": "https://archive.org/details/Microstuf_Data_Communications"
+    },
+    {
+      "identifier": "Microstuf_Inc_Information_Packet",
+      "url": "https://archive.org/details/Microstuf_Inc_Information_Packet"
+    },
+    {
+      "identifier": "Microstuf_Letter",
+      "url": "https://archive.org/details/Microstuf_Letter"
+    },
+    {
+      "identifier": "Mirror_Images_Software",
+      "url": "https://archive.org/details/Mirror_Images_Software"
+    },
+    {
+      "identifier": "Moonbeam_Software_for_the_TI-99-4A_Home_Computer_flyer",
+      "url": "https://archive.org/details/Moonbeam_Software_for_the_TI-99-4A_Home_Computer_flyer"
+    },
+    {
+      "identifier": "Newsweek_Subscription_Phone",
+      "url": "https://archive.org/details/Newsweek_Subscription_Phone"
+    },
+    {
+      "identifier": "Next_Computer_Color_Printer",
+      "url": "https://archive.org/details/Next_Computer_Color_Printer"
+    },
+    {
+      "identifier": "Next_Computer_Corporate_Background_Information_1992",
+      "url": "https://archive.org/details/Next_Computer_Corporate_Background_Information_1992"
+    },
+    {
+      "identifier": "Next_Names_Marcel_Gani_as_CFO_1992",
+      "url": "https://archive.org/details/Next_Names_Marcel_Gani_as_CFO_1992"
+    },
+    {
+      "identifier": "OSS_Precision_Software_Tools",
+      "url": "https://archive.org/details/OSS_Precision_Software_Tools"
+    },
+    {
+      "identifier": "Office_Personal_Office_System_Emerging_Technology",
+      "url": "https://archive.org/details/Office_Personal_Office_System_Emerging_Technology"
+    },
+    {
+      "identifier": "Offix_The_Personal_Office_System",
+      "url": "https://archive.org/details/Offix_The_Personal_Office_System"
+    },
+    {
+      "identifier": "Omni_Intelligent_Disks",
+      "url": "https://archive.org/details/Omni_Intelligent_Disks"
+    },
+    {
+      "identifier": "PC_Forth_Laboratory_Microsystems_Incorporated",
+      "url": "https://archive.org/details/PC_Forth_Laboratory_Microsystems_Incorporated"
+    },
+    {
+      "identifier": "PC_World_Subscribe",
+      "url": "https://archive.org/details/PC_World_Subscribe"
+    },
+    {
+      "identifier": "PC_World_Topics",
+      "url": "https://archive.org/details/PC_World_Topics"
+    },
+    {
+      "identifier": "Personal_Computers_in_Tax_Preparation",
+      "url": "https://archive.org/details/Personal_Computers_in_Tax_Preparation"
+    },
+    {
+      "identifier": "Postman_Product_Bulletin",
+      "url": "https://archive.org/details/Postman_Product_Bulletin"
+    },
+    {
+      "identifier": "Prentice_Hall_Personal_Computer_Section",
+      "url": "https://archive.org/details/Prentice_Hall_Personal_Computer_Section"
+    },
+    {
+      "identifier": "Professional_Software_Inc",
+      "url": "https://archive.org/details/Professional_Software_Inc"
+    },
+    {
+      "identifier": "Protecto_Enterprizes_Printer_Sale",
+      "url": "https://archive.org/details/Protecto_Enterprizes_Printer_Sale"
+    },
+    {
+      "identifier": "Pyxel_Applications",
+      "url": "https://archive.org/details/Pyxel_Applications"
+    },
+    {
+      "identifier": "Quala_TaskManager_Flyer",
+      "url": "https://archive.org/details/Quala_TaskManager_Flyer"
+    },
+    {
+      "identifier": "RTCS_Softscope",
+      "url": "https://archive.org/details/RTCS_Softscope"
+    },
+    {
+      "identifier": "Ramond_Splash",
+      "url": "https://archive.org/details/Ramond_Splash"
+    },
+    {
+      "identifier": "Rogue_Softalk_Review_1984",
+      "url": "https://archive.org/details/Rogue_Softalk_Review_1984"
+    },
+    {
+      "identifier": "Run_Magazine_Letter",
+      "url": "https://archive.org/details/Run_Magazine_Letter"
+    },
+    {
+      "identifier": "STSC_APL_Article",
+      "url": "https://archive.org/details/STSC_APL_Article"
+    },
+    {
+      "identifier": "Sierra_Online_Software_Catalog",
+      "url": "https://archive.org/details/Sierra_Online_Software_Catalog"
+    },
+    {
+      "identifier": "Sigma_Delta_Fraternity_Newsletter_1984_03",
+      "url": "https://archive.org/details/Sigma_Delta_Fraternity_Newsletter_1984_03"
+    },
+    {
+      "identifier": "Sim_Computer_Products_Flyer",
+      "url": "https://archive.org/details/Sim_Computer_Products_Flyer"
+    },
+    {
+      "identifier": "Simpson_Teton",
+      "url": "https://archive.org/details/Simpson_Teton"
+    },
+    {
+      "identifier": "Softraders_International_Charter_Membership",
+      "url": "https://archive.org/details/Softraders_International_Charter_Membership"
+    },
+    {
+      "identifier": "Starmate_Information_Sheet_STI",
+      "url": "https://archive.org/details/Starmate_Information_Sheet_STI"
+    },
+    {
+      "identifier": "SunGraphicsOverviewBrochure1998",
+      "url": "https://archive.org/details/SunGraphicsOverviewBrochure1998"
+    },
+    {
+      "identifier": "SunUltraWorkstationOverviewFlyer1998",
+      "url": "https://archive.org/details/SunUltraWorkstationOverviewFlyer1998"
+    },
+    {
+      "identifier": "Sydney_Dataproducts_Postman",
+      "url": "https://archive.org/details/Sydney_Dataproducts_Postman"
+    },
+    {
+      "identifier": "Symtec_Lightpen",
+      "url": "https://archive.org/details/Symtec_Lightpen"
+    },
+    {
+      "identifier": "TYMNET_Access_Cities",
+      "url": "https://archive.org/details/TYMNET_Access_Cities"
+    },
+    {
+      "identifier": "TYMNET_Access_Cities_for_Compuserve",
+      "url": "https://archive.org/details/TYMNET_Access_Cities_for_Compuserve"
+    },
+    {
+      "identifier": "Tech_Sketch_Light_Pen",
+      "url": "https://archive.org/details/Tech_Sketch_Light_Pen"
+    },
+    {
+      "identifier": "Tenex_Computer_Marketing_Systems_The_Everything_Book_Winter_1983",
+      "url": "https://archive.org/details/Tenex_Computer_Marketing_Systems_The_Everything_Book_Winter_1983"
+    },
+    {
+      "identifier": "The_Bach_Company_flyer",
+      "url": "https://archive.org/details/The_Bach_Company_flyer"
+    },
+    {
+      "identifier": "The_Computer_Newsletter_Issue_1_Coed_Edition",
+      "url": "https://archive.org/details/The_Computer_Newsletter_Issue_1_Coed_Edition"
+    },
+    {
+      "identifier": "Triton_Products_Company_Fall_1984_TI-99_4A_Catalog",
+      "url": "https://archive.org/details/Triton_Products_Company_Fall_1984_TI-99_4A_Catalog"
+    },
+    {
+      "identifier": "Triton_Products_Company_Spring_1984_TI-99_4A_Catalog",
+      "url": "https://archive.org/details/Triton_Products_Company_Spring_1984_TI-99_4A_Catalog"
+    },
+    {
+      "identifier": "TurboTechnologiesSuperSystemCardFlyer1992Images",
+      "url": "https://archive.org/details/TurboTechnologiesSuperSystemCardFlyer1992Images"
+    },
+    {
+      "identifier": "Use_MCI_Mail",
+      "url": "https://archive.org/details/Use_MCI_Mail"
+    },
+    {
+      "identifier": "Victory_Software_Catalog_June_1983",
+      "url": "https://archive.org/details/Victory_Software_Catalog_June_1983"
+    },
+    {
+      "identifier": "Visidex",
+      "url": "https://archive.org/details/Visidex"
+    },
+    {
+      "identifier": "Volkswriter_Deluxe_Lifetree_Software_Flyer",
+      "url": "https://archive.org/details/Volkswriter_Deluxe_Lifetree_Software_Flyer"
+    },
+    {
+      "identifier": "Vterm_Coefficient_Systems_Corporation",
+      "url": "https://archive.org/details/Vterm_Coefficient_Systems_Corporation"
+    },
+    {
+      "identifier": "Why_an_Atari",
+      "url": "https://archive.org/details/Why_an_Atari"
+    },
+    {
+      "identifier": "XOR_Corporation_EDO_Advertisement",
+      "url": "https://archive.org/details/XOR_Corporation_EDO_Advertisement"
+    },
+    {
+      "identifier": "XOR_Corporation_St_Hippolytes_Wall_Ad",
+      "url": "https://archive.org/details/XOR_Corporation_St_Hippolytes_Wall_Ad"
+    },
+    {
+      "identifier": "abacobox",
+      "url": "https://archive.org/details/abacobox"
+    },
+    {
+      "identifier": "aculab-floppy-tape-1981",
+      "url": "https://archive.org/details/aculab-floppy-tape-1981"
+    },
+    {
+      "identifier": "alphanetics_software_catalog",
+      "url": "https://archive.org/details/alphanetics_software_catalog"
+    },
+    {
+      "identifier": "answers-1985-01-1985",
+      "url": "https://archive.org/details/answers-1985-01-1985"
+    },
+    {
+      "identifier": "apparat---floppy-disk-drive-19xx",
+      "url": "https://archive.org/details/apparat---floppy-disk-drive-19xx"
+    },
+    {
+      "identifier": "apparat---hard-disk-19xx",
+      "url": "https://archive.org/details/apparat---hard-disk-19xx"
+    },
+    {
+      "identifier": "apparat---newdos-80-v2.5-19xx",
+      "url": "https://archive.org/details/apparat---newdos-80-v2.5-19xx"
+    },
+    {
+      "identifier": "apparat---newterm-sprint-microclinic-19xx",
+      "url": "https://archive.org/details/apparat---newterm-sprint-microclinic-19xx"
+    },
+    {
+      "identifier": "apparat---professional-football-etc-19xx",
+      "url": "https://archive.org/details/apparat---professional-football-etc-19xx"
+    },
+    {
+      "identifier": "apparat---registration-acknowledgement-19xx",
+      "url": "https://archive.org/details/apparat---registration-acknowledgement-19xx"
+    },
+    {
+      "identifier": "apple-guide-macintosh-family-hardware",
+      "url": "https://archive.org/details/apple-guide-macintosh-family-hardware"
+    },
+    {
+      "identifier": "apple-uPD72070",
+      "url": "https://archive.org/details/apple-uPD72070"
+    },
+    {
+      "identifier": "appleiiccosapuofareperme",
+      "url": "https://archive.org/details/appleiiccosapuofareperme"
+    },
+    {
+      "identifier": "appleiigsilpiupotenteappleii",
+      "url": "https://archive.org/details/appleiigsilpiupotenteappleii"
+    },
+    {
+      "identifier": "appleiiiopuscolo",
+      "url": "https://archive.org/details/appleiiiopuscolo"
+    },
+    {
+      "identifier": "appleisistemidielaborazionepersonale",
+      "url": "https://archive.org/details/appleisistemidielaborazionepersonale"
+    },
+    {
+      "identifier": "applepost",
+      "url": "https://archive.org/details/applepost"
+    },
+    {
+      "identifier": "applesofteintegerbasic",
+      "url": "https://archive.org/details/applesofteintegerbasic"
+    },
+    {
+      "identifier": "aquariushomecomputersystem",
+      "url": "https://archive.org/details/aquariushomecomputersystem"
+    },
+    {
+      "identifier": "asemast286",
+      "url": "https://archive.org/details/asemast286"
+    },
+    {
+      "identifier": "atari1040stfmegastslm804",
+      "url": "https://archive.org/details/atari1040stfmegastslm804"
+    },
+    {
+      "identifier": "ataridesktoppublishing",
+      "url": "https://archive.org/details/ataridesktoppublishing"
+    },
+    {
+      "identifier": "atarilineamusicalest",
+      "url": "https://archive.org/details/atarilineamusicalest"
+    },
+    {
+      "identifier": "ataripc",
+      "url": "https://archive.org/details/ataripc"
+    },
+    {
+      "identifier": "avalon-hill-games-and-parts-1982",
+      "url": "https://archive.org/details/avalon-hill-games-and-parts-1982"
+    },
+    {
+      "identifier": "big-five-software-flyers-19xx",
+      "url": "https://archive.org/details/big-five-software-flyers-19xx"
+    },
+    {
+      "identifier": "broderbund_software_cartridge",
+      "url": "https://archive.org/details/broderbund_software_cartridge"
+    },
+    {
+      "identifier": "casiofx702p",
+      "url": "https://archive.org/details/casiofx702p"
+    },
+    {
+      "identifier": "ceuncommodoreperme",
+      "url": "https://archive.org/details/ceuncommodoreperme"
+    },
+    {
+      "identifier": "conoscerehoneywell",
+      "url": "https://archive.org/details/conoscerehoneywell"
+    },
+    {
+      "identifier": "control-data-9408-floppy-drive-data-sheet-19xx",
+      "url": "https://archive.org/details/control-data-9408-floppy-drive-data-sheet-19xx"
+    },
+    {
+      "identifier": "cr-180-cash-register-expansion-system-19xx",
+      "url": "https://archive.org/details/cr-180-cash-register-expansion-system-19xx"
+    },
+    {
+      "identifier": "david-white-paper-1993",
+      "url": "https://archive.org/details/david-white-paper-1993"
+    },
+    {
+      "identifier": "delllatitudex300",
+      "url": "https://archive.org/details/delllatitudex300"
+    },
+    {
+      "identifier": "depliantmz700",
+      "url": "https://archive.org/details/depliantmz700"
+    },
+    {
+      "identifier": "eccolincredibilecommodore64",
+      "url": "https://archive.org/details/eccolincredibilecommodore64"
+    },
+    {
+      "identifier": "elencorivenditoriecentridiassitenza",
+      "url": "https://archive.org/details/elencorivenditoriecentridiassitenza"
+    },
+    {
+      "identifier": "enhanced-os-9-data-sheet-19xx",
+      "url": "https://archive.org/details/enhanced-os-9-data-sheet-19xx"
+    },
+    {
+      "identifier": "epson-mx-80-product-flyer-19xx",
+      "url": "https://archive.org/details/epson-mx-80-product-flyer-19xx"
+    },
+    {
+      "identifier": "exatron-stringy-floppy-19xx",
+      "url": "https://archive.org/details/exatron-stringy-floppy-19xx"
+    },
+    {
+      "identifier": "faidipiuconiltuocommodore",
+      "url": "https://archive.org/details/faidipiuconiltuocommodore"
+    },
+    {
+      "identifier": "falconc1",
+      "url": "https://archive.org/details/falconc1"
+    },
+    {
+      "identifier": "geos_it",
+      "url": "https://archive.org/details/geos_it"
+    },
+    {
+      "identifier": "hackers_playbill",
+      "url": "https://archive.org/details/hackers_playbill"
+    },
+    {
+      "identifier": "honeywellmicrosystem620",
+      "url": "https://archive.org/details/honeywellmicrosystem620"
+    },
+    {
+      "identifier": "honeywellms6microsystem620",
+      "url": "https://archive.org/details/honeywellms6microsystem620"
+    },
+    {
+      "identifier": "how-to-use-quickpro-1981",
+      "url": "https://archive.org/details/how-to-use-quickpro-1981"
+    },
+    {
+      "identifier": "ilbusinessbasicapple",
+      "url": "https://archive.org/details/ilbusinessbasicapple"
+    },
+    {
+      "identifier": "ilnuovosinclairqlquel",
+      "url": "https://archive.org/details/ilnuovosinclairqlquel"
+    },
+    {
+      "identifier": "ilpianificatorefiscaletaxplanner",
+      "url": "https://archive.org/details/ilpianificatorefiscaletaxplanner"
+    },
+    {
+      "identifier": "ilreporterquotazionienotiziedowjones",
+      "url": "https://archive.org/details/ilreporterquotazionienotiziedowjones"
+    },
+    {
+      "identifier": "inCider_Subscription_Card",
+      "url": "https://archive.org/details/inCider_Subscription_Card"
+    },
+    {
+      "identifier": "introduction-to-trs-80-basic-and-computer-programming-1980",
+      "url": "https://archive.org/details/introduction-to-trs-80-basic-and-computer-programming-1980"
+    },
+    {
+      "identifier": "ipersonalcomputerapple",
+      "url": "https://archive.org/details/ipersonalcomputerapple"
+    },
+    {
+      "identifier": "iretinformatica1982",
+      "url": "https://archive.org/details/iretinformatica1982"
+    },
+    {
+      "identifier": "iretrivenditoriapple",
+      "url": "https://archive.org/details/iretrivenditoriapple"
+    },
+    {
+      "identifier": "isdn_fax_1993",
+      "url": "https://archive.org/details/isdn_fax_1993"
+    },
+    {
+      "identifier": "lasernet-800-brochure",
+      "url": "https://archive.org/details/lasernet-800-brochure"
+    },
+    {
+      "identifier": "levadicomandoapple",
+      "url": "https://archive.org/details/levadicomandoapple"
+    },
+    {
+      "identifier": "lisaunrivoluzionariopcpermanagereprofessionisti",
+      "url": "https://archive.org/details/lisaunrivoluzionariopcpermanagereprofessionisti"
+    },
+    {
+      "identifier": "lnw-4mhz-dd-color-system-ad-1-19xx",
+      "url": "https://archive.org/details/lnw-4mhz-dd-color-system-ad-1-19xx"
+    },
+    {
+      "identifier": "lnw-4mhz-dd-color-system-ad-2-19xx",
+      "url": "https://archive.org/details/lnw-4mhz-dd-color-system-ad-2-19xx"
+    },
+    {
+      "identifier": "longview-19xx",
+      "url": "https://archive.org/details/longview-19xx"
+    },
+    {
+      "identifier": "macintoshilpcchesipuousareconundito",
+      "url": "https://archive.org/details/macintoshilpcchesipuousareconundito"
+    },
+    {
+      "identifier": "macintoshsolopochiindividuisannocomeusareuncomputer",
+      "url": "https://archive.org/details/macintoshsolopochiindividuisannocomeusareuncomputer"
+    },
+    {
+      "identifier": "microsette-computer-cassette-duplication-19xx",
+      "url": "https://archive.org/details/microsette-computer-cassette-duplication-19xx"
+    },
+    {
+      "identifier": "mini-memory-1982",
+      "url": "https://archive.org/details/mini-memory-1982"
+    },
+    {
+      "identifier": "missdaisy_excerpt",
+      "url": "https://archive.org/details/missdaisy_excerpt"
+    },
+    {
+      "identifier": "mm-1-extended-kit-flyer-19xx",
+      "url": "https://archive.org/details/mm-1-extended-kit-flyer-19xx"
+    },
+    {
+      "identifier": "mmg_game_packages",
+      "url": "https://archive.org/details/mmg_game_packages"
+    },
+    {
+      "identifier": "mmg_utility_packages",
+      "url": "https://archive.org/details/mmg_utility_packages"
+    },
+    {
+      "identifier": "mmsforth-general-description-1980",
+      "url": "https://archive.org/details/mmsforth-general-description-1980"
+    },
+    {
+      "identifier": "mmsforth-general-description-1982",
+      "url": "https://archive.org/details/mmsforth-general-description-1982"
+    },
+    {
+      "identifier": "mpfii",
+      "url": "https://archive.org/details/mpfii"
+    },
+    {
+      "identifier": "newdos-80-v2.0-upgrade-offer-19xx",
+      "url": "https://archive.org/details/newdos-80-v2.0-upgrade-offer-19xx"
+    },
+    {
+      "identifier": "next_computing_nextstep",
+      "url": "https://archive.org/details/next_computing_nextstep"
+    },
+    {
+      "identifier": "nextcubeturbo",
+      "url": "https://archive.org/details/nextcubeturbo"
+    },
+    {
+      "identifier": "nextstation",
+      "url": "https://archive.org/details/nextstation"
+    },
+    {
+      "identifier": "nextstationcolor",
+      "url": "https://archive.org/details/nextstationcolor"
+    },
+    {
+      "identifier": "olivetti-prodest-pc-1",
+      "url": "https://archive.org/details/olivetti-prodest-pc-1"
+    },
+    {
+      "identifier": "olivettielea9003montedeipaschi",
+      "url": "https://archive.org/details/olivettielea9003montedeipaschi"
+    },
+    {
+      "identifier": "olivettiln20",
+      "url": "https://archive.org/details/olivettiln20"
+    },
+    {
+      "identifier": "olivettim10",
+      "url": "https://archive.org/details/olivettim10"
+    },
+    {
+      "identifier": "olivettim15plus",
+      "url": "https://archive.org/details/olivettim15plus"
+    },
+    {
+      "identifier": "olivettim20ilpersonalitalianoa16bit",
+      "url": "https://archive.org/details/olivettim20ilpersonalitalianoa16bit"
+    },
+    {
+      "identifier": "olivettim240",
+      "url": "https://archive.org/details/olivettim240"
+    },
+    {
+      "identifier": "olivettim250",
+      "url": "https://archive.org/details/olivettim250"
+    },
+    {
+      "identifier": "olivettim28",
+      "url": "https://archive.org/details/olivettim28"
+    },
+    {
+      "identifier": "olivettim280",
+      "url": "https://archive.org/details/olivettim280"
+    },
+    {
+      "identifier": "olivettim290",
+      "url": "https://archive.org/details/olivettim290"
+    },
+    {
+      "identifier": "olivettim290s",
+      "url": "https://archive.org/details/olivettim290s"
+    },
+    {
+      "identifier": "olivettim30dpem40dp",
+      "url": "https://archive.org/details/olivettim30dpem40dp"
+    },
+    {
+      "identifier": "olivettim40bc",
+      "url": "https://archive.org/details/olivettim40bc"
+    },
+    {
+      "identifier": "olivettim40bcswbasebcosii",
+      "url": "https://archive.org/details/olivettim40bcswbasebcosii"
+    },
+    {
+      "identifier": "olivettip203opuscolo",
+      "url": "https://archive.org/details/olivettip203opuscolo"
+    },
+    {
+      "identifier": "olivettip602depliant",
+      "url": "https://archive.org/details/olivettip602depliant"
+    },
+    {
+      "identifier": "olivettip6040depliant",
+      "url": "https://archive.org/details/olivettip6040depliant"
+    },
+    {
+      "identifier": "olivettip6040opuscolo",
+      "url": "https://archive.org/details/olivettip6040opuscolo"
+    },
+    {
+      "identifier": "olivettip6060depliant",
+      "url": "https://archive.org/details/olivettip6060depliant"
+    },
+    {
+      "identifier": "olivettip652",
+      "url": "https://archive.org/details/olivettip652"
+    },
+    {
+      "identifier": "olivettipn20",
+      "url": "https://archive.org/details/olivettipn20"
+    },
+    {
+      "identifier": "olivettiprogramma101",
+      "url": "https://archive.org/details/olivettiprogramma101"
+    },
+    {
+      "identifier": "olivettiprogramma101b",
+      "url": "https://archive.org/details/olivettiprogramma101b"
+    },
+    {
+      "identifier": "olivettis6000",
+      "url": "https://archive.org/details/olivettis6000"
+    },
+    {
+      "identifier": "opuscolosinclair1983",
+      "url": "https://archive.org/details/opuscolosinclair1983"
+    },
+    {
+      "identifier": "opuscolosinclairql",
+      "url": "https://archive.org/details/opuscolosinclairql"
+    },
+    {
+      "identifier": "panoramicaapple",
+      "url": "https://archive.org/details/panoramicaapple"
+    },
+    {
+      "identifier": "paper-tiger-445-199x",
+      "url": "https://archive.org/details/paper-tiger-445-199x"
+    },
+    {
+      "identifier": "paper-tiger-460-199x",
+      "url": "https://archive.org/details/paper-tiger-460-199x"
+    },
+    {
+      "identifier": "parlabasic",
+      "url": "https://archive.org/details/parlabasic"
+    },
+    {
+      "identifier": "pc_world_subscription",
+      "url": "https://archive.org/details/pc_world_subscription"
+    },
+    {
+      "identifier": "perchelagentescegliemacintosh",
+      "url": "https://archive.org/details/perchelagentescegliemacintosh"
+    },
+    {
+      "identifier": "percom-dealer-signup-package-1979",
+      "url": "https://archive.org/details/percom-dealer-signup-package-1979"
+    },
+    {
+      "identifier": "percom-news-releases-1979",
+      "url": "https://archive.org/details/percom-news-releases-1979"
+    },
+    {
+      "identifier": "percom-product-bulletins-1979",
+      "url": "https://archive.org/details/percom-product-bulletins-1979"
+    },
+    {
+      "identifier": "percom-technical-memo-tfd-100-04-1979",
+      "url": "https://archive.org/details/percom-technical-memo-tfd-100-04-1979"
+    },
+    {
+      "identifier": "personalcomputercompaq",
+      "url": "https://archive.org/details/personalcomputercompaq"
+    },
+    {
+      "identifier": "personalcomputeribm",
+      "url": "https://archive.org/details/personalcomputeribm"
+    },
+    {
+      "identifier": "personalcomputersdigital",
+      "url": "https://archive.org/details/personalcomputersdigital"
+    },
+    {
+      "identifier": "personalsystem2ibmmodello30",
+      "url": "https://archive.org/details/personalsystem2ibmmodello30"
+    },
+    {
+      "identifier": "philipsnms8245",
+      "url": "https://archive.org/details/philipsnms8245"
+    },
+    {
+      "identifier": "pmc-80-personal-computer-data-sheet-19xx",
+      "url": "https://archive.org/details/pmc-80-personal-computer-data-sheet-19xx"
+    },
+    {
+      "identifier": "ppcamstrad",
+      "url": "https://archive.org/details/ppcamstrad"
+    },
+    {
+      "identifier": "ps2ibmmodelli35sxe35ls",
+      "url": "https://archive.org/details/ps2ibmmodelli35sxe35ls"
+    },
+    {
+      "identifier": "ps2ibmmodello50",
+      "url": "https://archive.org/details/ps2ibmmodello50"
+    },
+    {
+      "identifier": "ricordipresentaarchimedes",
+      "url": "https://archive.org/details/ricordipresentaarchimedes"
+    },
+    {
+      "identifier": "schedainterfacciaieee488apple",
+      "url": "https://archive.org/details/schedainterfacciaieee488apple"
+    },
+    {
+      "identifier": "sharpmz80b",
+      "url": "https://archive.org/details/sharpmz80b"
+    },
+    {
+      "identifier": "sistemagraficostrobe",
+      "url": "https://archive.org/details/sistemagraficostrobe"
+    },
+    {
+      "identifier": "softwaredisistemamacintoshversione7.0",
+      "url": "https://archive.org/details/softwaredisistemamacintoshversione7.0"
+    },
+    {
+      "identifier": "stx_Mr._Moons_Hi-Fi_Exchange_catalog",
+      "url": "https://archive.org/details/stx_Mr._Moons_Hi-Fi_Exchange_catalog"
+    },
+    {
+      "identifier": "stx_The_Bach_Company_flyer_AXIOM_Direct_Connect_Printers",
+      "url": "https://archive.org/details/stx_The_Bach_Company_flyer_AXIOM_Direct_Connect_Printers"
+    },
+    {
+      "identifier": "teac-fd-55r-floppy-drive-flyer-1993",
+      "url": "https://archive.org/details/teac-fd-55r-floppy-drive-flyer-1993"
+    },
+    {
+      "identifier": "texas-instruments-program-recorder-1982",
+      "url": "https://archive.org/details/texas-instruments-program-recorder-1982"
+    },
+    {
+      "identifier": "the-basic-handbook-2nd-edition-19xx",
+      "url": "https://archive.org/details/the-basic-handbook-2nd-edition-19xx"
+    },
+    {
+      "identifier": "the-patch-19xx",
+      "url": "https://archive.org/details/the-patch-19xx"
+    },
+    {
+      "identifier": "the_kinetic_screen_catalog",
+      "url": "https://archive.org/details/the_kinetic_screen_catalog"
+    },
+    {
+      "identifier": "the_sda_in_brief",
+      "url": "https://archive.org/details/the_sda_in_brief"
+    },
+    {
+      "identifier": "ti994a-opuscolo",
+      "url": "https://archive.org/details/ti994a-opuscolo"
+    },
+    {
+      "identifier": "ti994a-opuscolo1983",
+      "url": "https://archive.org/details/ti994a-opuscolo1983"
+    },
+    {
+      "identifier": "triton-catalogs-1985-spring",
+      "url": "https://archive.org/details/triton-catalogs-1985-spring"
+    },
+    {
+      "identifier": "triton-catalogs-1986-spring",
+      "url": "https://archive.org/details/triton-catalogs-1986-spring"
+    },
+    {
+      "identifier": "triton-catalogs-1987-fall-b",
+      "url": "https://archive.org/details/triton-catalogs-1987-fall-b"
+    },
+    {
+      "identifier": "triton-catalogs-1987-spring",
+      "url": "https://archive.org/details/triton-catalogs-1987-spring"
+    },
+    {
+      "identifier": "triton-catalogs-1988-fall-b-cover",
+      "url": "https://archive.org/details/triton-catalogs-1988-fall-b-cover"
+    },
+    {
+      "identifier": "triton-catalogs-1988-spring",
+      "url": "https://archive.org/details/triton-catalogs-1988-spring"
+    },
+    {
+      "identifier": "triton-catalogs-1988-summer",
+      "url": "https://archive.org/details/triton-catalogs-1988-summer"
+    },
+    {
+      "identifier": "triton-catalogs-1989-fall",
+      "url": "https://archive.org/details/triton-catalogs-1989-fall"
+    },
+    {
+      "identifier": "triton-catalogs-1989-spring",
+      "url": "https://archive.org/details/triton-catalogs-1989-spring"
+    },
+    {
+      "identifier": "triton-catalogs-fall-xmas-1989",
+      "url": "https://archive.org/details/triton-catalogs-fall-xmas-1989"
+    },
+    {
+      "identifier": "triton-catalogs-spring-1984",
+      "url": "https://archive.org/details/triton-catalogs-spring-1984"
+    },
+    {
+      "identifier": "trs-80-microcomputer-news-expiration-notice-19xx",
+      "url": "https://archive.org/details/trs-80-microcomputer-news-expiration-notice-19xx"
+    },
+    {
+      "identifier": "trs-80-software-library-1978",
+      "url": "https://archive.org/details/trs-80-software-library-1978"
+    },
+    {
+      "identifier": "tse-hardside-1982-price-list-1982",
+      "url": "https://archive.org/details/tse-hardside-1982-price-list-1982"
+    },
+    {
+      "identifier": "vaxelaboratoriperglianni80",
+      "url": "https://archive.org/details/vaxelaboratoriperglianni80"
+    },
+    {
+      "identifier": "verizon_wireless_jet_connect",
+      "url": "https://archive.org/details/verizon_wireless_jet_connect"
+    },
+    {
+      "identifier": "vic-20-il-computergame",
+      "url": "https://archive.org/details/vic-20-il-computergame"
+    },
+    {
+      "identifier": "vic20uncomputerdasballo",
+      "url": "https://archive.org/details/vic20uncomputerdasballo"
+    }
+  ]
+}
