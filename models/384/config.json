@@ -1,0 +1,25 @@
+{
+  "model_type": "rotdet_c4",
+  "architecture": {
+    "in_ch": 1,
+    "stem_ch": 16,
+    "widths": [
+      32,
+      64,
+      128
+    ],
+    "num_classes": 4,
+    "head_type": "orientation"
+  },
+  "resolution": 384,
+  "sha256": "5688a435babf46543ec827303864d37741940ad8b5e5b40b5b5c14008fa9f12b",
+  "bytes": 1560900,
+  "training_seed": 42,
+  "training_run": "20261007-194624-27e203",
+  "labels": [
+    "upright",
+    "90_CCW",
+    "180",
+    "270_CCW"
+  ]
+}

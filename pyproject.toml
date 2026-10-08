@@ -3,34 +3,33 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "rotdet-eval"
-version = "0.1.0"
-description = "Evaluation script for fcrescio/rotdet on Hugging Face document datasets."
+name = "rotdet"
+version = "2.0.0"
+description = "Compact C4-equivariant four-way document orientation detection."
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 license = { text = "MIT" }
 authors = [
-    { name = "Your Name", email = "your.email@example.com" }
+    { name = "Francesco Crescioli" }
 ]
 
 dependencies = [
     "torch>=2.0",
-    "torchvision>=0.15",
-    "datasets>=3.0.0",
-    "huggingface_hub>=0.25.0",
     "safetensors>=0.4.3",
-    "tqdm>=4.65.0",
     "Pillow>=10.0.0",
     "numpy>=1.24",
-    "requests>=2.31.0",
 ]
 
 [project.scripts]
-rotdet-eval = "evaluate_rotdet:main"
-rotdet-train = "train_rotdet:main"
+rotdet = "rotdet.predict:main"
+
+[project.optional-dependencies]
+hub = ["huggingface_hub>=0.25.0"]
+test = ["pytest>=8"]
+legacy = ["torchvision>=0.15", "datasets>=3.0.0", "huggingface_hub>=0.25.0", "tqdm>=4.65.0", "requests>=2.31.0"]
 
 [tool.setuptools]
-py-modules = ["rotdet_model", "rotdet_data", "rotdet_hf", "evaluate_rotdet", "train_rotdet"]
+packages = ["rotdet"]
 
 [tool.black]
 line-length = 88
@@ -38,6 +37,3 @@ target-version = ["py39"]
 
 [tool.isort]
 profile = "black"
-
-[tool.setuptools.packages.find]
-where = ["scripts"]
