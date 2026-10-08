@@ -30,6 +30,13 @@ The binary v1 API and weights are incompatible with the four-class v2 API.
 Use the v1.0 tag when reproducing the old model. The new `rotdet` package
 does not silently load old checkpoints or auto-rotate source files.
 
-Hub publication and a final v2.0 release tag follow verification of the
-actually downloaded published weights. Until then, the GitHub code is a
-release candidate, not evidence that weights are available on the Hub.
+Hub repository: https://huggingface.co/fcrescio/rotdet-v2
+
+Pinned weight/config revision:
+`6662ebee315bb481d2919b30922d42356a8361ab`.
+Both candidates retain the frozen lab checkpoint bytes. Later model-card
+edits do not change this immutable reference. Source datasets are absent.
+
+The v2.0 release tag records this weight revision and follows anonymous
+download verification. Code is MIT; weight licensing is separate and is
+not implicitly inherited from the v1 model.

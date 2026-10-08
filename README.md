@@ -6,8 +6,10 @@ inputs. Both checkpoints are approximately **1.56 MB**; 256 is the default
 cost-oriented choice, while 384 performed better on development validation.
 
 The implementation is corrected C4Net, not the experimental C4NetV2 class.
-This is a GitHub release candidate; Hub publication is tracked in
-[version identities](docs/VERSIONS.md). The old binary SimpleCNN remains
+Weights are published at
+[fcrescio/rotdet-v2](https://huggingface.co/fcrescio/rotdet-v2), with pinned
+artifact identities in [version identities](docs/VERSIONS.md).
+The old binary SimpleCNN remains
 available under the `v1.0` tag and the unchanged
 [v1 Hub repository](https://huggingface.co/fcrescio/rotdet).
 
@@ -29,16 +31,24 @@ loading and uses the exact architecture and resolution in the configuration.
 
 ```python
 from pathlib import Path
+import torch
 from rotdet import Detector
 
+torch.set_num_threads(4)  # The benchmark uses four CPU threads.
 detector = Detector("/path/to/256")
 result = detector.predict(Path("page.png").read_bytes())
 print(result["correction_cw_degrees"])
 ```
 
-After Hub publication, install `.[hub]` and use
-`Detector.from_pretrained(256, revision="<published-commit-sha>")`.
-An explicit revision is required for reproducible artifact selection.
+For Hub downloads, install `.[hub]` and use:
+
+```python
+detector = Detector.from_pretrained(
+    256, revision="6662ebee315bb481d2919b30922d42356a8361ab")
+```
+
+Use `384` for the larger input variant. An explicit revision is required
+for reproducible artifact selection.
 
 ## Output contract
 
@@ -87,5 +97,6 @@ entrypoint. Install `.[legacy]` only when working on those historical tools.
 ## License
 
 Code: MIT, as already declared by this project. Source documents are not
-covered by that license. Weight licensing will be stated separately in the
-Hub model card when the artifacts are published.
+covered by that license. No explicit weight license has been assigned yet;
+publication alone does not grant redistribution permission. Weight licensing
+is stated separately in the Hub model card.

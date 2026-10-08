@@ -22,11 +22,33 @@ at fixture lookup due to an incorrect lock-schema key in the verification
 script. This was corrected; a second clean-install attempt completed all
 checks. No checkpoint, label, dataset or model selection was changed.
 
-This verifies the prepared local public package, not downloaded Hub
-artifacts. Hugging Face creation was attempted with the available token and
-returned HTTP 403 (read-only authentication). Hub upload and subsequent
-download verification remain pending. Linux x86_64 CPU was tested; other
-platforms were not.
+The initial read-only Hugging Face token returned HTTP 403 when creating
+the repository. A subsequently supplied write token resolved this blocker;
+both checkpoint variants and their configs are now public. Linux x86_64
+CPU was tested; other platforms were not.
+
+## Published artifact verification
+
+Verified the public repository `fcrescio/rotdet-v2` at immutable revision
+`6662ebee315bb481d2919b30922d42356a8361ab` in another fresh CPU virtual
+environment, with an empty Hugging Face cache and no authentication token.
+Dependencies included huggingface_hub 2.2.0 and torch 2.14.1+cpu.
+
+- Anonymous snapshot downloads succeeded for both variant directories.
+- Public `Detector.from_pretrained` loaded each pinned variant.
+- Downloaded config checkpoint hashes matched the original frozen lock.
+- The loader verified the downloaded safetensors SHA-256 before loading.
+- All 40 frozen fixture views matched for **each** downloaded variant.
+- CLI prediction succeeded using the downloaded files for both variants.
+- All 10 public unit tests passed in this installed environment.
+
+No training, tuning, label revision or accuracy re-evaluation was performed.
+Only weights, configs, a model card and the generated Hub git attributes
+were published; no original or derived dataset images were uploaded.
+
+To repeat the external verification, add
+`--hub-revision 6662ebee315bb481d2919b30922d42356a8361ab` to the
+verification entrypoint's existing fixture/lock arguments.
 
 The available GitHub token does not have the `workflow` scope. The tested
 CPU workflow is supplied as `tools/cpu-tests.workflow.yml`, not activated
