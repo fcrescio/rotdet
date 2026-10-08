@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright (c) 2026 Francesco Crescioli
 from __future__ import annotations
 
 import torch
@@ -18,4 +20,3 @@ class RotDetModel(nn.Module):
         """Compute the cross-entropy loss for the provided logits and labels."""
 
         return F.cross_entropy(logits, labels)
-

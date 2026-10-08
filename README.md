@@ -44,7 +44,7 @@ For Hub downloads, install `.[hub]` and use:
 
 ```python
 detector = Detector.from_pretrained(
-    256, revision="6662ebee315bb481d2919b30922d42356a8361ab")
+    256, revision="7be7c172c43d0c5a842b8685d4bbd3d7f1567c10")
 ```
 
 Use `384` for the larger input variant. An explicit revision is required
@@ -96,7 +96,12 @@ entrypoint. Install `.[legacy]` only when working on those historical tools.
 
 ## License
 
-Code: MIT, as already declared by this project. Source documents are not
-covered by that license. No explicit weight license has been assigned yet;
-publication alone does not grant redistribution permission. Weight licensing
-is stated separately in the Hub model card.
+From v2.0.1, code and both v2 checkpoints are offered under **GNU GPL
+version 3 only (`GPL-3.0-only`)**; see [LICENSE](LICENSE) and
+[licensing scope](docs/LICENSING.md). Free use, modification and commercial
+use are allowed subject to GPL conditions, including copyleft on covered
+redistributions. This is GPL, not AGPL.
+
+The earlier MIT code grant is not revoked; existing v1.0/v2.0 tags retain
+their original notices. Original training/evaluation documents are excluded
+from this license and are not redistributed.

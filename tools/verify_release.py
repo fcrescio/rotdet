@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright (c) 2026 Francesco Crescioli
 """Install the public package in a new CPU-only venv and verify frozen parity.
 
 This is artifact verification, not another accuracy evaluation. Fixtures stay
@@ -45,7 +47,7 @@ def main():
         run(python, "-m", "pip", "install", f"{source}[test,hub]")
         run(python, "-m", "pytest", "-q", "-p", "no:cacheprovider", str(source / "tests"))
         code = '''
-import hashlib, json, sys, torch
+import hashlib, importlib.metadata, json, sys, torch
 from pathlib import Path
 from rotdet import Detector
 torch.set_num_threads(4)
@@ -53,6 +55,11 @@ artifacts, lock_path, fixtures = map(Path, sys.argv[1:4])
 hub_revision = sys.argv[4]
 lock = json.loads(lock_path.read_text())
 results = {}
+assert importlib.metadata.version("rotdet") == "2.0.1"
+assert importlib.metadata.metadata("rotdet")["License"] == "GPL-3.0-only"
+license_files = importlib.metadata.metadata("rotdet").get_all("License-File")
+assert any(p.endswith("LICENSE") for p in license_files)
+assert any(p.endswith("MIT-previous-releases.txt") for p in license_files)
 for size in (256, 384):
     directory = artifacts / str(size)
     if hub_revision:

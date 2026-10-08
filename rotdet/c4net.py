@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright (c) 2026 Francesco Crescioli
 from __future__ import annotations
 
 import torch
@@ -264,4 +266,3 @@ __all__ = [
     "InvariantHeadC4",
     "EquivariantHeadC4",
 ]
-

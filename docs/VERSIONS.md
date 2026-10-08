@@ -40,3 +40,16 @@ edits do not change this immutable reference. Source datasets are absent.
 The v2.0 release tag records this weight revision and follows anonymous
 download verification. Code is MIT; weight licensing is separate and is
 not implicitly inherited from the v1 model.
+
+## v2.0.1: GPL license release
+
+This new tag changes licensing/metadata only; architecture, preprocessing
+and checkpoint bytes remain unchanged. It does not move the earlier tags.
+Current code and both v2 checkpoints are offered under `GPL-3.0-only`.
+Prior MIT grants remain valid; the v1 weight license remains CC-BY-4.0.
+See [LICENSING.md](LICENSING.md) for scope and historical exceptions.
+
+GPL weight/config/license revision:
+`7be7c172c43d0c5a842b8685d4bbd3d7f1567c10`, also tagged `v2.0.1`
+on Hugging Face. It adds license files and card metadata without changing
+either checkpoint or its configuration.

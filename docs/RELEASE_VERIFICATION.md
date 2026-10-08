@@ -57,3 +57,15 @@ under `.github/workflows/`. No successful GitHub Actions run is claimed.
 The verification entrypoint is `tools/verify_release.py`. Its fixture and
 lock inputs are deliberately outside Git because the fixture images are
 not cleared for redistribution. Public unit tests need no private inputs.
+
+## v2.0.1 GPL licensing verification
+
+Repeated the clean CPU installation and anonymous Hub checks against GPL
+revision `7be7c172c43d0c5a842b8685d4bbd3d7f1567c10`.
+The installed distribution reports version 2.0.1 and license
+`GPL-3.0-only`; package license metadata includes both the full GPL text
+and the retained previous MIT notice. All 10 tests passed, both CLI paths
+worked, and all 40 frozen fixture views matched for each downloaded variant.
+The complete GPL license copies match the system's canonical GPL-3 text
+byte for byte. Hub metadata reports `gpl-3.0` and the NOTICE specifies
+version 3 only. Checkpoint bytes, architectures and configs are unchanged.

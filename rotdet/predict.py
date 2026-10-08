@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright (c) 2026 Francesco Crescioli
 """CPU inference for the frozen RotDet v2 C4Net checkpoints."""
 from __future__ import annotations
 

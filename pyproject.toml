@@ -4,11 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "rotdet"
-version = "2.0.0"
+version = "2.0.1"
 description = "Compact C4-equivariant four-way document orientation detection."
 readme = "README.md"
 requires-python = ">=3.11"
-license = { text = "MIT" }
+license = { text = "GPL-3.0-only" }
 authors = [
     { name = "Francesco Crescioli" }
 ]
@@ -30,6 +30,7 @@ legacy = ["torchvision>=0.15", "datasets>=3.0.0", "huggingface_hub>=0.25.0", "tq
 
 [tool.setuptools]
 packages = ["rotdet"]
+license-files = ["LICENSE", "docs/licenses/MIT-previous-releases.txt"]
 
 [tool.black]
 line-length = 88
